@@ -1,20 +1,66 @@
 
 // Import objections data
-import { OBJECTIONS_DATA } from './objections';
+import { OBJECTIONS_DATA, getRandomObjection } from './objections';
 
 const generateScenario = (templateId, difficulty = 'normal') => {
-    // This function will duplicate a base scenario and inject random objections based on difficulty
-    const baseScenario = JSON.parse(JSON.stringify(SCENARIOS_DATA[templateId]));
+    // Deep copy to avoid mutating the template
+    const scenario = JSON.parse(JSON.stringify(SCENARIOS_DATA[templateId]));
 
-    if (!baseScenario) return null;
+    if (!scenario) return null;
 
-    // Add unique ID to avoid caching issues in state
-    baseScenario.instanceId = `${templateId}-${Date.now()}`;
+    scenario.instanceId = `${templateId}-${Date.now()}`;
 
-    // FUTURE: Inject dynamic objections here based on difficulty
-    // For now, we return the base scenario but structure is ready for dynamic generation
+    // Logic to inject dynamic objections
+    // We look for nodes with type 'objection_slot'
+    if (scenario.nodes) {
+        Object.keys(scenario.nodes).forEach(nodeKey => {
+            const node = scenario.nodes[nodeKey];
+            if (node.type === 'objection_slot') {
+                const objection = getRandomObjection(node.difficultyFilter);
 
-    return baseScenario;
+                if (objection) {
+                    // Transform the generic objection into scenario nodes
+                    // 1. The Objection Node (Client speaking)
+                    scenario.nodes[node.id] = {
+                        id: node.id,
+                        type: 'dialogue',
+                        speaker: 'decisor',
+                        speakerName: 'Cliente',
+                        content: objection.objection,
+                        nextNodeId: `${node.id}-response`,
+                    };
+
+                    // 2. The Response Choice Node (User answer)
+                    scenario.nodes[`${node.id}-response`] = {
+                        id: `${node.id}-response`,
+                        type: 'choice',
+                        speaker: 'system',
+                        content: `O cliente lançou uma objeção de ${objection.category}. Como responder?`,
+                        choices: [
+                            {
+                                id: `${node.id}-c1`,
+                                text: objection.response1, // Direct/Standard response
+                                points: { strategy: 50, clarity: 80, tone: 70, diagnosis: 40, closing: 40 },
+                                feedback: 'Boa resposta técnica, mas poderia ser mais estratégica.',
+                                reasoning: objection.strategicObjective,
+                                nextNodeId: node.nextNodeId // Continue flow
+                            },
+                            {
+                                id: `${node.id}-c2`,
+                                text: objection.response2, // Strategic/Better response
+                                points: { strategy: 95, clarity: 90, tone: 90, diagnosis: 85, closing: 85 },
+                                feedback: 'Excelente! Resposta estratégica que re-enquadra a situação.',
+                                reasoning: `Perfeito alinhamento com o objetivo: ${objection.strategicObjective}`,
+                                nextNodeId: node.nextNodeId // Continue flow
+                            }
+                        ]
+                    };
+                }
+            }
+        });
+    }
+
+    return scenario;
 };
 
 // Base scenarios with "Slots" for dynamic content
