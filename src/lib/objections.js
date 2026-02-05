@@ -363,6 +363,33 @@ export const OBJECTIONS_DATA = [
         response2: 'A Voppi ajuda a rejuvenescer sua base de clientes e traz o público que dita tendências no mercado.',
         strategicObjective: 'Expansão de mercado',
         difficulty: 3
+    },
+    {
+        id: 'strategy-agency',
+        objection: 'Já tenho uma agência que cuida de tudo',
+        category: 'Estratégia',
+        response1: 'Excelente! A Voppi não substitui a agência, nós somos um canal de venda direta que a agência pode usar para potencializar resultados.',
+        response2: 'Nós entregamos a transação e os creators, algo que geralmente as agências tradicionais não conseguem operacionalizar nessa escala.',
+        strategicObjective: 'Complementaridade vs Substituição',
+        difficulty: 4
+    },
+    {
+        id: 'experience-no-discount-rule',
+        objection: 'Não quero atrelar minha marca a descontos, meu produto é de valor',
+        category: 'Experiência',
+        response1: 'Concordamos 100%. Por isso focamos em "benefícios exclusivos" e experiências, não em preço baixo pura e simplesmente.',
+        response2: 'Através dos creators, vendemos o desejo de viver a experiência. O benefício é apenas o empurrão final para a decisão.',
+        strategicObjective: 'Posicionamento de Valor',
+        difficulty: 5
+    },
+    {
+        id: 'operational-waiters',
+        objection: 'Meus garçons vão se perder com esse sistema',
+        category: 'Operacional',
+        response1: 'O sistema de validação é um link simples no celular ou tablet. Leva 5 segundos para validar.',
+        response2: 'Nós acompanhamos a primeira semana de operação para garantir que todos estejam confortáveis com o processo.',
+        strategicObjective: 'Simplicidade e Apoio',
+        difficulty: 2
     }
 ];
 

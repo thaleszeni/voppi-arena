@@ -2,6 +2,37 @@
 // Import objections data
 import { OBJECTIONS_DATA, getRandomObjection } from './objections';
 
+const CUSTOMER_TRAITS = [
+    {
+        id: 'skeptical',
+        name: 'Sético / Desconfiado',
+        description: 'Questiona tudo, foca em riscos e experiências passadas negativas.',
+        bonusCriteria: 'strategy',
+        icon: '🤨'
+    },
+    {
+        id: 'analytic',
+        name: 'Analítico / Pragmático',
+        description: 'Focado em números, ROI e detalhes técnicos do modelo.',
+        bonusCriteria: 'clarity',
+        icon: '📊'
+    },
+    {
+        id: 'friendly',
+        name: 'Amigável / Expressivo',
+        description: 'Valoriza relacionamento, tom de voz e conexão pessoal.',
+        bonusCriteria: 'tone',
+        icon: '😊'
+    },
+    {
+        id: 'busy',
+        name: 'Ocupado / Direto',
+        description: 'Sem tempo para conversa fiada. Quer objetividade total.',
+        bonusCriteria: 'diagnosis',
+        icon: '⏱️'
+    }
+];
+
 const generateScenario = (templateId, difficulty = 'normal') => {
     // Deep copy to avoid mutating the template
     const scenario = JSON.parse(JSON.stringify(SCENARIOS_DATA[templateId]));
@@ -10,27 +41,40 @@ const generateScenario = (templateId, difficulty = 'normal') => {
 
     scenario.instanceId = `${templateId}-${Date.now()}`;
 
+    // Pick a random customer trait for variability
+    const trait = CUSTOMER_TRAITS[Math.floor(Math.random() * CUSTOMER_TRAITS.length)];
+    scenario.customerTrait = trait;
+
     // Logic to inject dynamic objections
-    // We look for nodes with type 'objection_slot'
     if (scenario.nodes) {
         Object.keys(scenario.nodes).forEach(nodeKey => {
             const node = scenario.nodes[nodeKey];
+
+            // Inject dynamic content into existing dialogue nodes if they have placeholders
+            if (node.type === 'dialogue' && node.content.includes('{trait_reaction}')) {
+                const reactions = {
+                    skeptical: 'Olha, eu sou bem pé atrás com essas coisas de internet...',
+                    analytic: 'Mas me diz, quais são os números reais disso?',
+                    friendly: 'Poxa, que legal o trabalho de vocês!',
+                    busy: 'Seja rápido porque tenho uma reunião em 5 minutos.'
+                };
+                node.content = node.content.replace('{trait_reaction}', reactions[trait.id]);
+            }
+
             if (node.type === 'objection_slot') {
-                const objection = getRandomObjection(node.difficultyFilter);
+                const objection = getRandomObjection(node.difficultyFilter || scenario.difficulty);
 
                 if (objection) {
                     // Transform the generic objection into scenario nodes
-                    // 1. The Objection Node (Client speaking)
-                    scenario.nodes[node.id] = {
+                    scenario.nodes[nodeKey] = {
                         id: node.id,
                         type: 'dialogue',
-                        speaker: 'decisor',
-                        speakerName: 'Cliente',
+                        speaker: node.speaker || 'decisor',
+                        speakerName: node.speakerName || 'Cliente',
                         content: objection.objection,
                         nextNodeId: `${node.id}-response`,
                     };
 
-                    // 2. The Response Choice Node (User answer)
                     scenario.nodes[`${node.id}-response`] = {
                         id: `${node.id}-response`,
                         type: 'choice',
@@ -39,19 +83,33 @@ const generateScenario = (templateId, difficulty = 'normal') => {
                         choices: [
                             {
                                 id: `${node.id}-c1`,
-                                text: objection.response1, // Direct/Standard response
-                                points: { strategy: 50, clarity: 80, tone: 70, diagnosis: 40, closing: 40 },
-                                feedback: 'Boa resposta técnica, mas poderia ser mais estratégica.',
+                                text: objection.response1,
+                                points: {
+                                    strategy: 50,
+                                    clarity: 60,
+                                    tone: 60,
+                                    diagnosis: 40,
+                                    closing: 40,
+                                    [trait.bonusCriteria]: 10 // Tiny trait bonus
+                                },
+                                feedback: 'Resposta padrão. Funciona, mas não encanta.',
                                 reasoning: objection.strategicObjective,
-                                nextNodeId: node.nextNodeId // Continue flow
+                                nextNodeId: node.nextNodeId
                             },
                             {
                                 id: `${node.id}-c2`,
-                                text: objection.response2, // Strategic/Better response
-                                points: { strategy: 95, clarity: 90, tone: 90, diagnosis: 85, closing: 85 },
-                                feedback: 'Excelente! Resposta estratégica que re-enquadra a situação.',
-                                reasoning: `Perfeito alinhamento com o objetivo: ${objection.strategicObjective}`,
-                                nextNodeId: node.nextNodeId // Continue flow
+                                text: objection.response2,
+                                points: {
+                                    strategy: 90,
+                                    clarity: 90,
+                                    tone: 90,
+                                    diagnosis: 80,
+                                    closing: 80,
+                                    [trait.bonusCriteria]: 20 // Strategic trait bonus
+                                },
+                                feedback: 'Excelente! Você usou uma abordagem estratégica e contornou a dor.',
+                                reasoning: `Alinhado com o objetivo: ${objection.strategicObjective}. Traço do cliente: ${trait.name}`,
+                                nextNodeId: node.nextNodeId
                             }
                         ]
                     };
@@ -156,8 +214,8 @@ export const SCENARIOS_DATA = {
                 id: 'node-4-neutral',
                 type: 'dialogue',
                 speaker: 'decisor',
-                speakerName: 'Dono do Restaurante',
-                content: 'Sim, sou eu, Carlos. Voppi? O que seria isso?',
+                speakerName: 'Carlos',
+                content: '{trait_reaction} Mas me diz, Voppi? O que seria isso exatamente?',
                 nextNodeId: 'node-6-pitch',
             },
             'node-4-good': {
@@ -165,7 +223,7 @@ export const SCENARIOS_DATA = {
                 type: 'dialogue',
                 speaker: 'decisor',
                 speakerName: 'Carlos (Dono)',
-                content: 'Ah, muito obrigado! Sim, sou eu, Carlos. Cuido do restaurante há 8 anos. Voppi... já ouvi falar, é tipo Groupon?',
+                content: 'Ah, muito obrigado! {trait_reaction} Sim, sou eu, Carlos. Cuido do restaurante há 8 anos. Voppi... já ouvi falar, é tipo Groupon?',
                 nextNodeId: 'node-5-differentiate',
             },
             'node-5-differentiate': {
@@ -180,7 +238,7 @@ export const SCENARIOS_DATA = {
                         points: { strategy: 30, clarity: 50, tone: 60, diagnosis: 30, closing: 30 },
                         feedback: 'Confirmar a comparação com Groupon pode trazer associações negativas.',
                         reasoning: 'Groupon tem histórico de descontos agressivos e clientes "caça-promoção".',
-                        nextNodeId: 'node-6-pricing-objection',
+                        nextNodeId: 'objection-slot-1'
                     },
                     {
                         id: 'choice-3b',
@@ -192,45 +250,25 @@ export const SCENARIOS_DATA = {
                     },
                 ],
             },
+            'objection-slot-1': {
+                id: 'objection-slot-1',
+                type: 'objection_slot',
+                difficultyFilter: 3,
+                nextNodeId: 'node-6-pitch'
+            },
             'node-6-pitch': {
                 id: 'node-6-pitch',
                 type: 'dialogue',
                 speaker: 'decisor',
                 speakerName: 'Carlos (Dono)',
-                content: 'Interessante... Mas como funciona na prática? Tem algum custo?',
+                content: '{trait_reaction} Interessante... Mas como funciona na prática? Tem algum custo?',
                 nextNodeId: 'node-7-pricing',
             },
-            'node-6-pricing-objection': {
-                id: 'node-6-pricing-objection',
-                type: 'dialogue',
-                speaker: 'decisor',
-                speakerName: 'Carlos (Dono)',
-                content: 'Ah, tipo Groupon então... Tentei uma vez e não deu certo. Veio muita gente só atrás de desconto e nunca mais voltou.',
-                nextNodeId: 'node-7-overcome-objection',
-            },
-            'node-7-overcome-objection': {
-                id: 'node-7-overcome-objection',
-                type: 'choice',
-                speaker: 'system',
-                content: 'Objeção clássica sobre clientes "caça-promoção". Como contornar?',
-                choices: [
-                    {
-                        id: 'choice-4a',
-                        text: 'Entendo sua preocupação. Mas nossos descontos são menores, então atrai um público melhor.',
-                        points: { strategy: 50, clarity: 60, tone: 60, diagnosis: 40, closing: 40 },
-                        feedback: 'Argumento fraco. Desconto menor não garante cliente melhor.',
-                        reasoning: 'Precisa trazer dados ou diferencial concreto.',
-                        nextNodeId: 'node-8-closing',
-                    },
-                    {
-                        id: 'choice-4b',
-                        text: 'Faz total sentido essa preocupação. Por isso trabalhamos diferente: nossa curadoria atrai pessoas que buscam experiências, não só preço. E você só paga ao parceiro após o atendimento - se o cliente não for, não tem custo.',
-                        points: { strategy: 90, clarity: 90, tone: 90, diagnosis: 85, closing: 80 },
-                        feedback: 'Excelente! Validou a dor, trouxe diferencial e reduziu risco percebido.',
-                        reasoning: 'Modelo de pagamento pós-atendimento é argumento forte contra risco.',
-                        nextNodeId: 'node-8-closing',
-                    },
-                ],
+            'objection-slot-2': {
+                id: 'objection-slot-2',
+                type: 'objection_slot',
+                difficultyFilter: 4,
+                nextNodeId: 'node-8-closing'
             },
             'node-7-pricing': {
                 id: 'node-7-pricing',
@@ -244,7 +282,7 @@ export const SCENARIOS_DATA = {
                         points: { strategy: 60, clarity: 70, tone: 65, diagnosis: 50, closing: 55 },
                         feedback: 'Direto, mas faltou construir valor antes de falar em preço.',
                         reasoning: 'Mencionar preço antes de mostrar o pacote completo pode gerar objeção prematura.',
-                        nextNodeId: 'node-8-objection-price',
+                        nextNodeId: 'objection-slot-2',
                     },
                     {
                         id: 'choice-5b',

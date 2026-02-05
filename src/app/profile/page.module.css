@@ -272,3 +272,75 @@
     font-weight: var(--font-weight-bold);
     color: var(--voppi-pink);
 }
+/* Edit Form */
+.editForm {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    background: rgba(255, 255, 255, 0.1);
+    padding: var(--space-6);
+    border-radius: var(--radius-xl);
+    margin-top: var(--space-4);
+    width: 100%;
+    max-width: 500px;
+}
+
+.fieldGroup {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-1);
+}
+
+.fieldGroup label {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    opacity: 0.8;
+}
+
+.fieldGroup input {
+    background: rgba(0, 0, 0, 0.2);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-md);
+    padding: var(--space-3);
+    color: white;
+    font-size: var(--font-size-sm);
+    transition: all var(--transition-fast);
+}
+
+.fieldGroup input:focus {
+    outline: none;
+    border-color: var(--voppi-pink);
+    background: rgba(0, 0, 0, 0.3);
+}
+
+.editActions {
+    display: flex;
+    gap: var(--space-3);
+    margin-top: var(--space-2);
+}
+
+.successMsg, .errorMsg {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-medium);
+}
+
+.successMsg { color: #10B981; }
+.errorMsg { color: #EF4444; }
+
+@media (max-width: 768px) {
+    .profileHeader {
+        flex-direction: column;
+        text-align: center;
+        padding: var(--space-6);
+    }
+    
+    .profileMeta {
+        justify-content: center;
+    }
+
+    .editForm {
+        margin: var(--space-4) auto;
+    }
+}

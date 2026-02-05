@@ -27,14 +27,28 @@ const MOCK_HISTORY = [
 ];
 
 export default function ProfilePage() {
-    const { user, profile, loading, signOut } = useAuth();
+    const { user, profile, loading, signOut, updateProfile } = useAuth();
     const router = useRouter();
+
+    const [isEditing, setIsEditing] = useState(false);
+    const [editForm, setEditForm] = useState({
+        full_name: '',
+        avatar_url: '',
+    });
+    const [isSubmitting, setIsSubmitting] = useState(false);
+    const [message, setMessage] = useState({ type: '', text: '' });
 
     useEffect(() => {
         if (!loading && !user) {
             router.push('/login');
         }
-    }, [user, loading, router]);
+        if (profile) {
+            setEditForm({
+                full_name: profile.full_name || '',
+                avatar_url: profile.avatar_url || '',
+            });
+        }
+    }, [user, loading, router, profile]);
 
     if (loading || !user) {
         return (
@@ -53,6 +67,25 @@ export default function ProfilePage() {
         router.push('/login');
     };
 
+    const handleUpdateProfile = async (e) => {
+        e.preventDefault();
+        setIsSubmitting(true);
+        setMessage({ type: '', text: '' });
+
+        const { error } = await updateProfile({
+            full_name: editForm.full_name,
+            avatar_url: editForm.avatar_url,
+        });
+
+        if (error) {
+            setMessage({ type: 'error', text: 'Erro ao atualizar perfil. Tente novamente.' });
+        } else {
+            setMessage({ type: 'success', text: 'Perfil atualizado com sucesso!' });
+            setIsEditing(false);
+        }
+        setIsSubmitting(false);
+    };
+
     return (
         <>
             <Navbar />
@@ -67,19 +100,77 @@ export default function ProfilePage() {
                                 src={profile?.avatar_url}
                                 size="2xl"
                             />
-                            <button className={styles.avatarEdit}>✏️</button>
+                            {!isEditing && (
+                                <button
+                                    className={styles.avatarEdit}
+                                    onClick={() => setIsEditing(true)}
+                                >
+                                    ✏️
+                                </button>
+                            )}
                         </div>
                         <div className={styles.profileInfo}>
-                            <h1 className={styles.profileName}>{profile?.full_name || 'Usuário'}</h1>
-                            <div className={styles.profileMeta}>
-                                <Badge variant="primary">
-                                    N{profile?.level || 1} • {LEVEL_NAMES[profile?.level || 1]}
-                                </Badge>
-                                {profile?.role === 'admin' && (
-                                    <Badge variant="secondary">Admin</Badge>
-                                )}
-                            </div>
-                            <p className={styles.profileEmail}>{user?.email}</p>
+                            {isEditing ? (
+                                <form onSubmit={handleUpdateProfile} className={styles.editForm}>
+                                    <div className={styles.fieldGroup}>
+                                        <label>Nome Completo</label>
+                                        <input
+                                            type="text"
+                                            value={editForm.full_name}
+                                            onChange={(e) => setEditForm({ ...editForm, full_name: e.target.value })}
+                                            placeholder="Seu nome completo"
+                                            required
+                                        />
+                                    </div>
+                                    <div className={styles.fieldGroup}>
+                                        <label>URL da Foto (Avatar)</label>
+                                        <input
+                                            type="url"
+                                            value={editForm.avatar_url}
+                                            onChange={(e) => setEditForm({ ...editForm, avatar_url: e.target.value })}
+                                            placeholder="https://exemplo.com/foto.jpg"
+                                        />
+                                    </div>
+                                    {message.text && (
+                                        <p className={message.type === 'error' ? styles.errorMsg : styles.successMsg}>
+                                            {message.text}
+                                        </p>
+                                    )}
+                                    <div className={styles.editActions}>
+                                        <Button
+                                            type="button"
+                                            variant="ghost"
+                                            onClick={() => {
+                                                setIsEditing(false);
+                                                setMessage({ type: '', text: '' });
+                                            }}
+                                            disabled={isSubmitting}
+                                        >
+                                            Cancelar
+                                        </Button>
+                                        <Button
+                                            type="submit"
+                                            variant="primary"
+                                            loading={isSubmitting}
+                                        >
+                                            Salvar Alterações
+                                        </Button>
+                                    </div>
+                                </form>
+                            ) : (
+                                <>
+                                    <h1 className={styles.profileName}>{profile?.full_name || 'Usuário'}</h1>
+                                    <div className={styles.profileMeta}>
+                                        <Badge variant="primary">
+                                            N{profile?.level || 1} • {LEVEL_NAMES[profile?.level || 1]}
+                                        </Badge>
+                                        {profile?.role === 'admin' && (
+                                            <Badge variant="secondary">Admin</Badge>
+                                        )}
+                                    </div>
+                                    <p className={styles.profileEmail}>{user?.email}</p>
+                                </>
+                            )}
                         </div>
                         <div className={styles.profileActions}>
                             <Button variant="ghost" onClick={handleSignOut}>

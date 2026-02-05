@@ -112,16 +112,20 @@ export function AuthProvider({ children }) {
         return { error };
     };
 
-    const refreshProfile = async () => {
-        if (user) {
-            const userProfile = await getUserProfile(user.id);
-            setProfile(userProfile);
-        }
-    };
+    const updateProfile = async (updates) => {
+        if (!user) return { error: { message: 'Usuário não autenticado' } };
 
-    const isAdmin = profile?.role === 'admin' ||
-        user?.email === 'thales@voppimais.com.br' ||
-        user?.email === 'admin@voppi.com';
+        const { data, error } = await supabase
+            .from('profiles')
+            .update(updates)
+            .eq('id', user.id);
+
+        if (!error) {
+            setProfile(prev => ({ ...prev, ...updates }));
+        }
+
+        return { data, error };
+    };
 
     const value = {
         user,
@@ -131,6 +135,7 @@ export function AuthProvider({ children }) {
         signUp,
         signOut,
         refreshProfile,
+        updateProfile,
         isAdmin,
     };
 

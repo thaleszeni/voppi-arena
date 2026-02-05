@@ -237,13 +237,30 @@ export default function RoleplayPlayerPage() {
                 </Link>
                 <div className={styles.scenarioInfo}>
                     <h2>{scenario.title}</h2>
-                    <Badge variant="outline">{'⭐'.repeat(scenario.difficulty)}</Badge>
+                    <div className={styles.metaBadges}>
+                        <Badge variant="outline">{'⭐'.repeat(scenario.difficulty)}</Badge>
+                        {scenario.customerTrait && (
+                            <Badge variant="secondary" title={scenario.customerTrait.description}>
+                                {scenario.customerTrait.icon} {scenario.customerTrait.name}
+                            </Badge>
+                        )}
+                    </div>
                 </div>
                 <div className={styles.scorePreview}>
                     <span className={styles.scoreIcon}>🎯</span>
                     <span>{totalScore} pts</span>
                 </div>
             </div>
+
+            {scenario.customerTrait && !isComplete && (
+                <div className={styles.traitAlert}>
+                    <span className={styles.traitIcon}>{scenario.customerTrait.icon}</span>
+                    <div className={styles.traitText}>
+                        <strong>Perfil do Cliente: {scenario.customerTrait.name}</strong>
+                        <p>{scenario.customerTrait.description}</p>
+                    </div>
+                </div>
+            )}
 
             <div className={styles.playerContent}>
                 <div className={styles.dialogueContainer}>
