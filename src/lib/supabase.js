@@ -1,18 +1,30 @@
+```
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
-  if (typeof window !== 'undefined') {
-    console.warn('⚠️ Supabase credentials missing! Running in MOCK mode. Login/Signup will not work.');
-  }
+    if (typeof window !== 'undefined') {
+        console.error('❌ Supabase credentials missing! Check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
+    }
+} else {
+    if (typeof window !== 'undefined') {
+        console.log('✅ Supabase initialized with URL:', supabaseUrl.substring(0, 10) + '...');
+    }
 }
 
 // Only initialize if we have the credentials to avoid crashing during build
-export const supabase = (supabaseUrl && supabaseAnonKey)
-  ? createClient(supabaseUrl, supabaseAnonKey)
-  : {
+let supabaseClient;
+try {
+    supabaseClient = (supabaseUrl && supabaseAnonKey) 
+        ? createClient(supabaseUrl, supabaseAnonKey)
+        : null;
+} catch (e) {
+    console.error('❌ Error creating Supabase client:', e);
+}
+
+export const supabase = supabaseClient || {
     auth: {
       onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => { } } } }),
       getSession: async () => ({ data: { session: null } }),

@@ -11,40 +11,47 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        // Get initial session
-        const getInitialSession = async () => {
+        let subscription = null;
+
+        const initAuth = async () => {
             try {
+                // 1. Get initial session
                 const { data: { session } } = await supabase.auth.getSession();
                 if (session?.user) {
                     setUser(session.user);
                     const userProfile = await getUserProfile(session.user.id);
                     setProfile(userProfile);
                 }
+
+                // 2. Listen for auth changes
+                const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(
+                    async (event, session) => {
+                        console.log('Auth event:', event);
+                        if (session?.user) {
+                            setUser(session.user);
+                            const userProfile = await getUserProfile(session.user.id);
+                            setProfile(userProfile);
+                        } else {
+                            setUser(null);
+                            setProfile(null);
+                        }
+                        setLoading(false);
+                    }
+                );
+                subscription = sub;
             } catch (error) {
-                console.error('Error getting session:', error);
+                console.error('Fatal error in AuthProvider:', error);
             } finally {
-                setLoading(false);
+                // Ensure we eventually stop loading
+                setTimeout(() => setLoading(false), 2000);
             }
         };
 
-        getInitialSession();
+        initAuth();
 
-        // Listen for auth changes
-        const { data: { subscription } } = supabase.auth.onAuthStateChange(
-            async (event, session) => {
-                if (session?.user) {
-                    setUser(session.user);
-                    const userProfile = await getUserProfile(session.user.id);
-                    setProfile(userProfile);
-                } else {
-                    setUser(null);
-                    setProfile(null);
-                }
-                setLoading(false);
-            }
-        );
-
-        return () => subscription.unsubscribe();
+        return () => {
+            if (subscription) subscription.unsubscribe();
+        };
     }, []);
 
     const signIn = async (email, password) => {
