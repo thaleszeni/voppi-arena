@@ -110,11 +110,26 @@
     color: var(--text-secondary);
 }
 
+.objectionTitleRow {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    flex: 1;
+}
+
+.difficultyBadge {
+    font-size: 0.8rem;
+    letter-spacing: -2px;
+    opacity: 0.8;
+}
+
 .objectionText {
+    flex: 1;
     font-size: var(--font-size-lg);
     font-weight: var(--font-weight-semibold);
     color: var(--text-primary);
     font-style: italic;
+    margin: 0;
 }
 
 /* Objection Details */

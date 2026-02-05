@@ -1,4 +1,23 @@
-// Mock scenario data - will be replaced with Supabase data
+
+// Import objections data
+import { OBJECTIONS_DATA } from './objections';
+
+const generateScenario = (templateId, difficulty = 'normal') => {
+    // This function will duplicate a base scenario and inject random objections based on difficulty
+    const baseScenario = JSON.parse(JSON.stringify(SCENARIOS_DATA[templateId]));
+
+    if (!baseScenario) return null;
+
+    // Add unique ID to avoid caching issues in state
+    baseScenario.instanceId = `${templateId}-${Date.now()}`;
+
+    // FUTURE: Inject dynamic objections here based on difficulty
+    // For now, we return the base scenario but structure is ready for dynamic generation
+
+    return baseScenario;
+};
+
+// Base scenarios with "Slots" for dynamic content
 export const SCENARIOS_DATA = {
     'restaurante-decisor': {
         id: 'restaurante-decisor',
@@ -121,7 +140,7 @@ export const SCENARIOS_DATA = {
                         id: 'choice-3b',
                         text: 'A gente é marketplace de experiências, não só descontos. Temos curadoria forte e trabalhamos com creators pra divulgar. É bem diferente do modelo tradicional.',
                         points: { strategy: 85, clarity: 80, tone: 85, diagnosis: 75, closing: 70 },
-                        feedback: 'Ótima diferenciação! Curadoria + creators = proposta de valor única.',
+                        feedback: 'Ótimo! Curadoria + creators = proposta de valor única.',
                         reasoning: 'Destacar os diferenciais evita a armadilha de ser visto como "mais um Groupon".',
                         nextNodeId: 'node-6-pitch',
                     },
@@ -228,7 +247,7 @@ export const SCENARIOS_DATA = {
                 type: 'dialogue',
                 speaker: 'decisor',
                 speakerName: 'Carlos (Dono)',
-                content: 'Hmm, faz sentido... E como a gente começa?',
+                content: 'hmm, faz sentido... E como a gente começa?',
                 nextNodeId: 'node-9-close',
             },
             'node-9-close': {
@@ -682,7 +701,10 @@ export const SCENARIOS_DATA = {
 };
 
 export function getScenario(id) {
-    return SCENARIOS_DATA[id] || null;
+    if (SCENARIOS_DATA[id]) {
+        return generateScenario(id);
+    }
+    return null;
 }
 
 export function getAllScenarios() {
