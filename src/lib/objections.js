@@ -302,22 +302,67 @@ export const OBJECTIONS_DATA = [
         difficulty: 4
     },
     {
-        id: 'variation-exclusive-creators',
-        objection: 'Posso contratar creators por fora sozinho',
-        category: 'Marketing',
-        response1: 'Pode, mas na Voppi cuidamos de toda a curadoria, agendamento, briefing e análise de métricas.',
-        response2: 'Nossa rede de creators já está integrada ao fluxo de venda imediata, o que potencializa o ROI.',
-        strategicObjective: 'Conveniência e Integração de Rede',
+        id: 'model-exclusive-city',
+        objection: 'Quero exclusividade na minha cidade',
+        category: 'Modelo de Negócio',
+        response1: 'A Voppi foca em curadoria. Não teremos 10 restaurantes iguais, mas teremos variedade para o cliente.',
+        response2: 'A presença de outros parceiros atrai mais tráfego e usuários para a plataforma, o que aumenta suas vendas também.',
+        strategicObjective: 'Visão de ecossistema',
+        difficulty: 4
+    },
+    {
+        id: 'finance-tax-nf',
+        objection: 'Como funciona a nota fiscal disso?',
+        category: 'Financeiro',
+        response1: 'Você emite a nota do valor líquido recebido e nós emitimos a nota da nossa comissão de serviço.',
+        response2: 'Tudo é feito dentro das normas contábeis, garantindo transparência e segurança fiscal para sua empresa.',
+        strategicObjective: 'Segurança contábil',
         difficulty: 3
     },
     {
-        id: 'variation-abandonment-rate',
-        objection: 'Muita gente compra e não vem usar',
+        id: 'operational-staff-training',
+        objection: 'Minha equipe não sabe usar o dashboard',
         category: 'Operacional',
-        response1: 'Isso é ótimo pro seu caixa! Você recebeu pela venda e não teve o custo variável do produto.',
-        response2: 'Trabalhamos com validade de voucher. Se o cliente não vem, o repasse ocorre da mesma forma.',
-        strategicObjective: 'Vantagem do No-Show para o parceiro',
+        response1: 'O sistema é extremamente simples. Em 5 minutos qualquer atendente aprende a validar um voucher.',
+        response2: 'Nós fornecemos treinamento e materiais de apoio para garantir que sua equipe opere com total confiança.',
+        strategicObjective: 'Simplicidade operacional',
+        difficulty: 2
+    },
+    {
+        id: 'marketing-brand-dilution',
+        objection: 'Não quero ser conhecido como o restaurante da promoção',
+        category: 'Marketing',
+        response1: 'A Voppi é um canal de experiências. O cliente vem pelo valor da sua entrega, não pelo preço.',
+        response2: 'Nossa curadoria de parceiros é rigorosa. Você estará ao lado das melhores marcas da região.',
+        strategicObjective: 'Prestígio de marca',
         difficulty: 4
+    },
+    {
+        id: 'competition-local-guide',
+        objection: 'Já estou no Guia Gastronômico local',
+        category: 'Concorrência',
+        response1: 'Ótimo! A Voppi é diferente por ter a venda transacional e a rede de creators integrada.',
+        response2: 'Enquanto o guia é informativo, a Voppi é um canal de conversão direta com rastreabilidade total.',
+        strategicObjective: 'Diferenciação proativa',
+        difficulty: 3
+    },
+    {
+        id: 'contract-renewal',
+        objection: 'Como funciona a renovação do setup?',
+        category: 'Contrato',
+        response1: 'O setup é uma taxa única de ativação. Não há cobranças recorrentes além da comissão por venda.',
+        response2: 'É um investimento focado em colocar sua marca no ar com a melhor performance possível desde o dia 1.',
+        strategicObjective: 'Clareza de custos',
+        difficulty: 2
+    },
+    {
+        id: 'strategy-offline-reach',
+        objection: 'Meu público é mais offline/velho',
+        category: 'Estratégia',
+        response1: 'O público digital está em todas as faixas hoje. E os filhos/netos são quem decidem onde ir.',
+        response2: 'A Voppi ajuda a rejuvenescer sua base de clientes e traz o público que dita tendências no mercado.',
+        strategicObjective: 'Expansão de mercado',
+        difficulty: 3
     }
 ];
 
@@ -335,20 +380,6 @@ export function getRandomObjection(difficulty = null) {
             // Fallback to range
             pool = pool.filter(obj => Math.abs(obj.difficulty - difficulty) <= 1);
         }
-    }
-    const randomIndex = Math.floor(Math.random() * pool.length);
-    return pool[randomIndex];
-}
-
-
-export function getObjectionById(id) {
-    return OBJECTIONS_DATA.find(obj => obj.id === id);
-}
-
-export function getRandomObjection(difficulty = null) {
-    let pool = OBJECTIONS_DATA;
-    if (difficulty) {
-        pool = pool.filter(obj => obj.difficulty === difficulty);
     }
     const randomIndex = Math.floor(Math.random() * pool.length);
     return pool[randomIndex];

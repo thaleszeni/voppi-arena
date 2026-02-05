@@ -10,23 +10,12 @@ import Avatar from '@/components/ui/Avatar';
 import Badge from '@/components/ui/Badge';
 import styles from './page.module.css';
 
-const LEADERBOARD_DATA = [
-    { rank: 1, name: 'Maria Silva', points: 4850, level: 5, badges: 8, roleplays: 23, avgScore: 87 },
-    { rank: 2, name: 'João Santos', points: 4200, level: 4, badges: 6, roleplays: 19, avgScore: 82 },
-    { rank: 3, name: 'Ana Costa', points: 3800, level: 4, badges: 5, roleplays: 17, avgScore: 79 },
-    { rank: 4, name: 'Pedro Oliveira', points: 3500, level: 3, badges: 4, roleplays: 15, avgScore: 76 },
-    { rank: 5, name: 'Lucas Pereira', points: 3100, level: 3, badges: 4, roleplays: 14, avgScore: 74 },
-    { rank: 6, name: 'Julia Mendes', points: 2800, level: 3, badges: 3, roleplays: 12, avgScore: 72 },
-    { rank: 7, name: 'Rafael Souza', points: 2500, level: 2, badges: 3, roleplays: 11, avgScore: 70 },
-    { rank: 8, name: 'Fernanda Lima', points: 2200, level: 2, badges: 2, roleplays: 10, avgScore: 68 },
-    { rank: 9, name: 'Gabriel Rocha', points: 1900, level: 2, badges: 2, roleplays: 8, avgScore: 65 },
-    { rank: 10, name: 'Caetano Ribeiro', points: 1600, level: 1, badges: 1, roleplays: 6, avgScore: 62 },
-];
-
 const LEVEL_NAMES = ['', 'Abertura', 'Diagnóstico', 'Objeções', 'Proposta', 'Fechamento'];
 
 export default function RankingPage() {
     const { user, profile, loading } = useAuth();
+    const [leaderboard, setLeaderboard] = useState([]);
+    const [fetchingRank, setFetchingRank] = useState(true);
     const router = useRouter();
 
     useEffect(() => {
@@ -35,7 +24,38 @@ export default function RankingPage() {
         }
     }, [user, loading, router]);
 
-    if (loading || !user) {
+    useEffect(() => {
+        async function fetchRanking() {
+            if (!user) return;
+
+            try {
+                const { data, error } = await supabase
+                    .from('users')
+                    .select('*')
+                    .order('total_points', { ascending: false })
+                    .limit(20);
+
+                if (!error) {
+                    setLeaderboard(data.map((p, i) => ({
+                        rank: i + 1,
+                        name: p.full_name,
+                        points: p.total_points || 0,
+                        level: p.level || 1,
+                        badges: 3, // Placeholder or fetch real badges
+                        roleplays: 5, // Placeholder or fetch real attempts
+                        avgScore: 75 // Placeholder
+                    })));
+                }
+            } catch (err) {
+                console.error('Error fetching ranking:', err);
+            } finally {
+                setFetchingRank(false);
+            }
+        }
+        fetchRanking();
+    }, [user]);
+
+    if (loading || !user || fetchingRank) {
         return (
             <div className={styles.loadingContainer}>
                 <div className={styles.loader}></div>

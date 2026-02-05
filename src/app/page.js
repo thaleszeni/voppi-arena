@@ -33,18 +33,19 @@ const MOCK_SCENARIOS = [
   },
 ];
 
-const MOCK_LEADERBOARD = [
-  { rank: 1, name: 'Maria Silva', points: 4850, level: 5 },
-  { rank: 2, name: 'João Santos', points: 4200, level: 4 },
-  { rank: 3, name: 'Ana Costa', points: 3800, level: 4 },
-  { rank: 4, name: 'Pedro Oliveira', points: 3500, level: 3 },
-  { rank: 5, name: 'Lucas Pereira', points: 3100, level: 3 },
-];
+const MOCK_LEADERBOARD = []; // Cleaned up mock data
 
 export default function HomePage() {
   const { user, profile, loading } = useAuth();
+  const router = useRouter();
 
-  if (loading) {
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  if (loading || !user) {
     return (
       <div className={styles.loadingContainer}>
         <div className={styles.loader}></div>
@@ -63,21 +64,11 @@ export default function HomePage() {
           <section className={styles.hero}>
             <div className={styles.heroContent}>
               <h1 className={styles.heroTitle}>
-                {user ? `Olá, ${profile?.full_name?.split(' ')[0] || 'Comercial'}! 👋` : 'Arena de Roleplay Comercial'}
+                Olá, {profile?.full_name?.split(' ')[0] || 'Comercial'}! 👋
               </h1>
               <p className={styles.heroSubtitle}>
-                {user
-                  ? 'Pronto para mais um treino? Escolha um cenário e domine a arte da venda!'
-                  : 'Domine a arte da venda com simulações interativas. Treine, evolua, conquiste!'
-                }
+                Pronto para mais um treino? Escolha um cenário e domine a arte da venda!
               </p>
-              {!user && (
-                <div className={styles.heroCta}>
-                  <Link href="/login" className={styles.heroButton}>
-                    Começar Agora
-                  </Link>
-                </div>
-              )}
             </div>
             <div className={styles.heroVisual}>
               <div className={styles.heroCard}>
@@ -96,38 +87,36 @@ export default function HomePage() {
           </section>
 
           {/* Quick Stats */}
-          {user && (
-            <section className={styles.statsSection}>
-              <div className={styles.statCard}>
-                <div className={styles.statIcon}>🎯</div>
-                <div className={styles.statInfo}>
-                  <span className={styles.statValue}>{profile?.total_points || 0}</span>
-                  <span className={styles.statLabel}>Pontos Totais</span>
-                </div>
+          <section className={styles.statsSection}>
+            <div className={styles.statCard}>
+              <div className={styles.statIcon}>🎯</div>
+              <div className={styles.statInfo}>
+                <span className={styles.statValue}>{profile?.total_points || 0}</span>
+                <span className={styles.statLabel}>Pontos Totais</span>
               </div>
-              <div className={styles.statCard}>
-                <div className={styles.statIcon}>⭐</div>
-                <div className={styles.statInfo}>
-                  <span className={styles.statValue}>N{profile?.level || 1}</span>
-                  <span className={styles.statLabel}>Seu Nível</span>
-                </div>
+            </div>
+            <div className={styles.statCard}>
+              <div className={styles.statIcon}>⭐</div>
+              <div className={styles.statInfo}>
+                <span className={styles.statValue}>N{profile?.level || 1}</span>
+                <span className={styles.statLabel}>Seu Nível</span>
               </div>
-              <div className={styles.statCard}>
-                <div className={styles.statIcon}>🏅</div>
-                <div className={styles.statInfo}>
-                  <span className={styles.statValue}>3</span>
-                  <span className={styles.statLabel}>Badges</span>
-                </div>
+            </div>
+            <div className={styles.statCard}>
+              <div className={styles.statIcon}>🏅</div>
+              <div className={styles.statInfo}>
+                <span className={styles.statValue}>3</span>
+                <span className={styles.statLabel}>Badges</span>
               </div>
-              <div className={styles.statCard}>
-                <div className={styles.statIcon}>📊</div>
-                <div className={styles.statInfo}>
-                  <span className={styles.statValue}>#5</span>
-                  <span className={styles.statLabel}>Ranking</span>
-                </div>
+            </div>
+            <div className={styles.statCard}>
+              <div className={styles.statIcon}>📊</div>
+              <div className={styles.statInfo}>
+                <span className={styles.statValue}>#1</span>
+                <span className={styles.statLabel}>Ranking</span>
               </div>
-            </section>
-          )}
+            </div>
+          </section>
 
           {/* Scenarios Section */}
           <section className={styles.section}>
