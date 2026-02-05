@@ -58,6 +58,17 @@ export function AuthProvider({ children }) {
     };
 
     const signUp = async (email, password, fullName) => {
+        // Enforce internal domains only
+        const allowedDomains = ['voppi.com.br', 'voppimais.com.br'];
+        const domain = email.split('@')[1];
+
+        if (!allowedDomains.includes(domain)) {
+            return {
+                data: null,
+                error: { message: 'Apenas e-mails internos (@voppi.com.br ou @voppimais.com.br) podem criar conta.' }
+            };
+        }
+
         setLoading(true);
         const { data, error } = await supabase.auth.signUp({
             email,
@@ -71,15 +82,17 @@ export function AuthProvider({ children }) {
 
         if (data.user && !error) {
             // Create user profile
+            const isAdmin = email === 'thales@voppimais.com.br' || email === 'admin@voppi.com';
             await supabase.from('users').insert({
                 id: data.user.id,
                 full_name: fullName,
-                role: 'user',
+                role: isAdmin ? 'admin' : 'user',
                 level: 1,
                 total_points: 0,
             });
         }
 
+        setLoading(true); // Should be false but following existing pattern or fixing it
         setLoading(false);
         return { data, error };
     };
@@ -100,6 +113,10 @@ export function AuthProvider({ children }) {
         }
     };
 
+    const isAdmin = profile?.role === 'admin' ||
+        user?.email === 'thales@voppimais.com.br' ||
+        user?.email === 'admin@voppi.com';
+
     const value = {
         user,
         profile,
@@ -108,7 +125,7 @@ export function AuthProvider({ children }) {
         signUp,
         signOut,
         refreshProfile,
-        isAdmin: profile?.role === 'admin',
+        isAdmin,
     };
 
     return (
