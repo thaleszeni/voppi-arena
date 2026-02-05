@@ -127,6 +127,17 @@ export function AuthProvider({ children }) {
         return { data, error };
     };
 
+    const refreshProfile = async () => {
+        if (user) {
+            const userProfile = await getUserProfile(user.id);
+            setProfile(userProfile);
+        }
+    };
+
+    const isAdmin = profile?.role === 'admin' ||
+        user?.email === 'thales@voppimais.com.br' ||
+        user?.email === 'admin@voppi.com';
+
     const value = {
         user,
         profile,
