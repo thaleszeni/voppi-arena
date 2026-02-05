@@ -1,56 +1,55 @@
-```
 import { createClient } from '@supabase/supabase-js';
 
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || '';
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '';
 
 if (!supabaseUrl || !supabaseAnonKey) {
-    if (typeof window !== 'undefined') {
-        console.error('❌ Supabase credentials missing! Check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
-    }
+  if (typeof window !== 'undefined') {
+    console.error('❌ Supabase credentials missing! Check NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY environment variables.');
+  }
 } else {
-    if (typeof window !== 'undefined') {
-        console.log('✅ Supabase initialized with URL:', supabaseUrl.substring(0, 10) + '...');
-    }
+  if (typeof window !== 'undefined') {
+    console.log('✅ Supabase initialized with URL:', supabaseUrl.substring(0, 10) + '...');
+  }
 }
 
 // Only initialize if we have the credentials to avoid crashing during build
 let supabaseClient;
 try {
-    supabaseClient = (supabaseUrl && supabaseAnonKey) 
-        ? createClient(supabaseUrl, supabaseAnonKey)
-        : null;
+  supabaseClient = (supabaseUrl && supabaseAnonKey)
+    ? createClient(supabaseUrl, supabaseAnonKey)
+    : null;
 } catch (e) {
-    console.error('❌ Error creating Supabase client:', e);
+  console.error('❌ Error creating Supabase client:', e);
 }
 
 export const supabase = supabaseClient || {
-    auth: {
-      onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => { } } } }),
-      getSession: async () => ({ data: { session: null } }),
-      getUser: async () => ({ data: { user: null } }),
-      signInWithPassword: async () => ({ error: { message: 'Supabase credentials missing' } }),
-      signUp: async () => ({ error: { message: 'Supabase credentials missing' } }),
-      signOut: async () => ({ error: null }),
-    },
-    from: () => ({
-      select: () => ({
-        eq: () => ({
-          single: async () => ({ data: null, error: null }),
-          order: () => ({ limit: async () => ({ data: [], error: null }) }),
-        }),
+  auth: {
+    onAuthStateChange: () => ({ data: { subscription: { unsubscribe: () => { } } } }),
+    getSession: async () => ({ data: { session: null } }),
+    getUser: async () => ({ data: { user: null } }),
+    signInWithPassword: async () => ({ error: { message: 'Supabase credentials missing' } }),
+    signUp: async () => ({ error: { message: 'Supabase credentials missing' } }),
+    signOut: async () => ({ error: null }),
+  },
+  from: () => ({
+    select: () => ({
+      eq: () => ({
         single: async () => ({ data: null, error: null }),
+        order: () => ({ limit: async () => ({ data: [], error: null }) }),
       }),
-      insert: async () => ({ data: null, error: null }),
-      update: () => ({
-        eq: () => ({
-          select: () => ({
-            single: async () => ({ data: null, error: null })
-          })
-        })
-      }),
+      single: async () => ({ data: null, error: null }),
     }),
-  };
+    insert: async () => ({ data: null, error: null }),
+    update: () => ({
+      eq: () => ({
+        select: () => ({
+          single: async () => ({ data: null, error: null })
+        })
+      })
+    }),
+  }),
+};
 
 // Helper function to get current user
 export async function getCurrentUser() {

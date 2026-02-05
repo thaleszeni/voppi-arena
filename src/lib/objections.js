@@ -1,230 +1,345 @@
 export const OBJECTIONS_DATA = [
+    // Modelo de Negócio
     {
-        id: 'price-setup',
-        objection: 'Esse setup é caro (R$ 697)',
-        category: 'Preço / Setup',
-        response1: 'O setup cobre toda a estrutura inicial e já entrega valor antes de qualquer venda. Você recebe creator, diagnóstico, cardápio e presença digital organizada.',
-        response2: 'Antes de qualquer venda você já recebe creator, diagnóstico, cardápio e presença digital organizada. O setup é justamente pra evitar erro e perda de tempo depois.',
-        strategicObjective: 'Entendimento de que setup = ativação, não custo vazio',
-        difficulty: 3
-    },
-    {
-        id: 'price-investment',
-        objection: 'Não queria investir agora',
-        category: 'Preço / Setup',
-        response1: 'Sem o setup a parceria não consegue rodar com qualidade.',
-        response2: 'O setup é justamente pra evitar erro e perda de tempo depois. É um investimento para garantir que a operação comece certa.',
-        strategicObjective: 'Sensação de investimento inteligente',
-        difficulty: 2
-    },
-    {
-        id: 'comparison-marketplaces',
-        objection: 'Outros marketplaces não cobram isso',
-        category: 'Comparação',
-        response1: 'Eles também não entregam creator, base própria e ferramentas.',
-        response2: 'A comparação justa é entrega x entrega, não só valor. Nós entregamos mídia, conteúdo e tecnologia.',
-        strategicObjective: 'Reenquadrar comparação para valor entregue',
+        id: 'model-prime',
+        objection: 'Isso é tipo Prime Gourmet ou Floripa em Dobro?',
+        category: 'Modelo de Negócio',
+        response1: 'Não. Esses modelos funcionam por assinatura. A Voppi vende experiências individuais, sem assinatura.',
+        response2: 'Além disso, o cliente compra exatamente o que quer viver, não paga antes pra talvez usar depois.',
+        strategicObjective: 'Entendimento claro do diferencial do modelo',
         difficulty: 3
     },
     {
         id: 'model-groupon',
-        objection: 'Isso é tipo Groupon?',
-        category: 'Modelo',
-        response1: 'O Groupon focava volume e desconto agressivo. A Voppi foca em experiência e qualidade.',
-        response2: 'A gente vende menos, mas vende melhor. Nosso foco é atrair clientes que voltam, não caçadores de oferta.',
-        strategicObjective: 'Diferenciação clara de modelo: Volume x Qualidade',
-        difficulty: 4
-    },
-    {
-        id: 'margin-discount',
-        objection: 'Não tenho margem pra desconto',
-        category: 'Margem',
-        response1: 'A ideia não é desconto agressivo, é um benefício para atrair. Trabalhamos com receita incremental.',
-        response2: 'Trabalhamos com receita incremental, não substituição. O cliente Voppi ocupa mesas vazias ou horários ociosos.',
-        strategicObjective: 'Redução de medo financeiro / Receita incremental',
-        difficulty: 4
-    },
-    {
-        id: 'public-quality',
-        objection: 'Cliente de promoção consome pouco',
-        category: 'Público',
-        response1: 'Nosso público busca experiência. Creators atraem público que consome mais e valoriza a marca.',
-        response2: 'Pelo contrário, o público trazido por creators tende a gastar mais com bebidas e extras porque confia na recomendação.',
-        strategicObjective: 'Reposicionamento do público (Experiência x Preço)',
-        difficulty: 3
-    },
-    {
-        id: 'capacity',
-        objection: 'Não consigo atender mais gente',
-        category: 'Capacidade',
-        response1: 'A gente controla fluxo com regras de dias e horários.',
-        response2: 'O foco é constância, não pico. Você define quantas ofertas libera por dia.',
-        strategicObjective: 'Segurança operacional e controle',
-        difficulty: 2
-    },
-    {
-        id: 'trust-marketplace',
-        objection: 'Já tive problema com marketplace antes',
-        category: 'Confiança',
-        response1: 'Nosso modelo é diferente. Hoje temos processos, curadoria e histórico validado.',
-        response2: 'Entendo. Por isso temos um gerente de contas dedicado e suporte real, não robô.',
-        strategicObjective: 'Reconstrução de confiança através de processo',
-        difficulty: 4
-    },
-    {
-        id: 'payment-terms',
-        objection: 'Por que vocês pagam só depois?',
-        category: 'Pagamento',
-        response1: 'Isso protege o cliente e o parceiro de estornos e cancelamentos.',
-        response2: 'Evita cancelamento e estorno que prejudicam todo mundo. Garante que só pagamos venda real e consumada.',
-        strategicObjective: 'Entendimento do modelo financeiro como proteção',
-        difficulty: 3
-    },
-    {
-        id: 'perceived-value-marketing',
-        objection: 'Já faço marketing / Tenho agência',
-        category: 'Valor percebido',
-        response1: 'O problema não é fazer, é integrar. A gente conecta marketing, venda e creator num fluxo só.',
-        response2: 'Ótimo! A Voppi soma. Sua agência faz branding, a gente faz venda direta e traz creators.',
-        strategicObjective: 'Mostrar integração como diferencial / Somar não substituir',
-        difficulty: 3
-    },
-    {
-        id: 'authority-guarantee',
-        objection: 'Quem garante que vai dar certo?',
-        category: 'Autoridade',
-        response1: 'Nenhum canal garante venda. O que garantimos é estrutura, exposição e processo validado.',
-        response2: 'Temos cases de sucesso em nichos iguais ao seu. Posso te mostrar resultados de parceiros similares?',
-        strategicObjective: 'Confiança realista e prova social',
-        difficulty: 4
-    },
-    {
-        id: 'exclusivity',
-        objection: 'Vou ficar preso à Voppi?',
-        category: 'Exclusividade',
-        response1: 'A parceria não é exclusiva. Você pode continuar com outros canais.',
-        response2: 'A Voppi soma, não substitui outros canais. Queremos ser seu melhor canal, por mérito.',
-        strategicObjective: 'Liberdade percebida',
-        difficulty: 2
-    },
-    {
-        id: 'timing-bad',
-        objection: 'Agora não é um bom momento',
-        category: 'Tempo',
-        response1: 'Sem problema, te explico agora pra decidir depois.',
-        response2: 'Prefiro te explicar com calma pra você decidir no tempo certo. Quanto antes estruturar, antes colhe.',
-        strategicObjective: 'Redução de pressão / Plantar semente',
-        difficulty: 2
-    },
-    {
-        id: 'price-roi',
-        objection: 'R$ 697 não volta em venda',
-        category: 'Preço',
-        response1: 'O valor não é só venda. Mesmo sem vender, você já recebe ferramentas que custariam mais.',
-        response2: 'Se você contratasse fotógrafo, designer e agência separadamente, daria 3x esse valor.',
-        strategicObjective: 'Expansão de visão de valor (Serviços inclusos)',
-        difficulty: 3
-    },
-    {
-        id: 'creator-performance',
-        objection: 'E se o creator não performar?',
-        category: 'Creator',
-        response1: 'Escolhemos creators alinhados ao seu público, não só por números.',
-        response2: 'Não é publi solta, é conteúdo estratégico focado em experiência real.',
-        strategicObjective: 'Confiança no processo de curadoria',
-        difficulty: 3
-    },
-    {
-        id: 'brand-image',
-        objection: 'Não quero desvalorizar meu restaurante',
-        category: 'Marca',
-        response1: 'A Voppi trabalha com curadoria. Selecionamos parceiros que valorizam experiência.',
-        response2: 'Desvaloriza se for desconto por desconto. Nós vendemos a experiência gastronômica.',
-        strategicObjective: 'Proteção de marca / Posicionamento Premium',
-        difficulty: 4
-    },
-    {
-        id: 'audience-mismatch',
-        objection: 'Meu público não é esse',
-        category: 'Concorrência',
-        response1: 'O público da Voppi é nacional e qualificado.',
-        response2: 'A gente amplia alcance sem mudar posicionamento. Trazemos gente nova que gasta bem.',
-        strategicObjective: 'Ampliação de visão de mercado',
-        difficulty: 3
-    },
-    {
-        id: 'financial-commission',
-        objection: 'Prefiro comissão menor',
-        category: 'Financeiro',
-        response1: 'Percentual não define resultado. O que importa é margem final e fluxo.',
-        response2: 'Uma comissão menor sem venda não adianta. Nossa comissão inclui toda a tecnologia e marketing.',
-        strategicObjective: 'Mudança de métrica mental (Percentual x Lucro absoluto)',
-        difficulty: 3
-    },
-    {
-        id: 'timing-test-later',
-        objection: 'Vamos testar depois',
-        category: 'Timing',
-        response1: 'Posso te explicar agora pra você testar consciente.',
-        response2: 'Quanto antes estruturar, antes colher resultado. O setup leva um tempo, melhor começar já.',
-        strategicObjective: 'Avanço sem pressão / Senso de urgência suave',
-        difficulty: 2
-    },
-    {
-        id: 'comparison-club',
-        objection: 'Isso é tipo Prime Gourmet / Floripa em Dobro?',
-        category: 'Comparação',
-        response1: 'Não, o modelo é bem diferente. Eles vendem assinatura pro cliente. Nós vendemos SUA experiência.',
-        response2: 'Eles são clubes de benefício (acesso). A Voppi é marketplace de vendas.',
-        strategicObjective: 'Separação clara de modelos (Clube x Marketplace)',
-        difficulty: 3
-    },
-    {
-        id: 'business-model-revenue',
-        objection: 'Mas o cliente compra algo pra usar depois, né?',
+        objection: 'Já testei Groupon e não funcionou',
         category: 'Modelo de Negócio',
-        response1: 'No Prime o cliente paga assinatura. Na Voppi ele compra o SEU produto antecipado.',
-        response2: 'É venda garantida. O dinheiro entra pra Voppi e a gente repassa quando ele consumir.',
-        strategicObjective: 'Clareza de fluxo de caixa',
+        response1: 'O problema desses modelos foi falta de curadoria e controle. Vinha muita gente de uma vez sem filtro.',
+        response2: 'A Voppi trabalha com limite de vendas e estratégia personalizada. Focamos em qualidade, não volume descontrolado.',
+        strategicObjective: 'Quebra de trauma histórico',
+        difficulty: 4
+    },
+    {
+        id: 'model-liquidation',
+        objection: 'Isso vai virar liquidação',
+        category: 'Modelo de Negócio',
+        response1: 'A Voppi não comunica como liquidação, e sim como experiência exclusiva através de curadoria.',
+        response2: 'O foco é benefício, não preço baixo. Mantemos o valor percebido da sua marca.',
+        strategicObjective: 'Proteção de posicionamento',
+        difficulty: 3
+    },
+
+    // Financeiro
+    {
+        id: 'finance-setup-now',
+        objection: 'Não quero pagar setup agora',
+        category: 'Financeiro',
+        response1: 'O setup cobre entregas que você usaria com vários fornecedores (marketing, artes, diagnóstico).',
+        response2: 'É o que garante que sua oferta entre profissional desde o início, evitando perda de tempo e dinheiro.',
+        strategicObjective: 'Justificativa de investimento',
         difficulty: 2
     },
     {
-        id: 'revenue-uncertainty',
-        objection: 'Lá o cliente só usa se quiser',
-        category: 'Receita',
-        response1: 'No Prime o consumo é opcional. Na Voppi só existe venda quando o cliente já decidiu consumir.',
-        response2: 'Segurança de demanda. Quem comprou Voppi, vai no seu restaurante.',
-        strategicObjective: 'Segurança de demanda confirmada',
+        id: 'finance-697-expensive',
+        objection: '697 é caro',
+        category: 'Financeiro',
+        response1: 'Separado, as entregas de mídia, artes e diagnóstico custariam muito mais que esse valor único.',
+        response2: 'A ideia é facilitar o acesso a ferramentas profissionais por um valor único de ativação.',
+        strategicObjective: 'Percepção de valor',
         difficulty: 3
     },
     {
-        id: 'discount-bogo',
-        objection: 'É tipo compre um e ganhe outro?',
-        category: 'Desconto',
-        response1: 'Não necessariamente. Você define a oferta. Pode ser menu degustação, combo, etc.',
-        response2: 'O desconto é controlado e pensado pra experiência, não pra volume desenfreado.',
-        strategicObjective: 'Flexibilidade da oferta',
+        id: 'finance-pay-if-sell',
+        objection: 'Só pago se vender',
+        category: 'Financeiro',
+        response1: 'A gente só ganha a comissão se vender também. O setup é apenas para ativação da sua marca.',
+        response2: 'Nosso modelo é de sucesso compartilhado: nosso maior interesse é que sua oferta performe muito bem.',
+        strategicObjective: 'Alinhamento de interesses',
         difficulty: 2
     },
     {
-        id: 'control-usage',
-        objection: 'Lá o cliente pode usar quando quiser',
-        category: 'Controle',
-        response1: 'No clube você não controla. Na Voppi você define regras, datas e capacidade.',
-        response2: 'Você tem controle total da agenda e de quantos vouchers libera.',
-        strategicObjective: 'Sensação de controle total',
+        id: 'finance-if-no-sales',
+        objection: 'E se não vender nada?',
+        category: 'Financeiro',
+        response1: 'A gente ajusta creator, comunicação e oferta até performar. Temos interesse total no seu giro.',
+        response2: 'Não deixamos a oferta esquecida no site. Monitoramos e buscamos alternativas de divulgação até dar certo.',
+        strategicObjective: 'Redução de risco percebido',
         difficulty: 3
     },
     {
-        id: 'compare-final',
-        objection: 'Então qual é a principal diferença?',
-        category: 'Comparação Final',
-        response1: 'Prime vende acesso (carteirinha). Voppi vende experiência (seu prato).',
-        response2: 'Prime gera uso eventual. Voppi gera venda antecipada, visibilidade e posicionamento.',
-        strategicObjective: 'Fixação clara do diferencial único',
-        difficulty: 1
+        id: 'finance-no-instant-pay',
+        objection: 'Por que não pagam na hora?',
+        category: 'Financeiro',
+        response1: 'Porque oferecemos troca e crédito ao cliente antes do uso, o que protege a experiência do parceiro.',
+        response2: 'Esse modelo protege tanto o cliente quanto o parceiro em caso de cancelamentos ou trocas.',
+        strategicObjective: 'Confiança no modelo',
+        difficulty: 3
+    },
+    {
+        id: 'finance-fear-debt',
+        objection: 'Tenho medo de calote',
+        category: 'Financeiro',
+        response1: 'O pagamento ocorre após o atendimento para garantir total segurança jurídica e financeira.',
+        response2: 'É um modelo muito mais sustentável e seguro para ambas as partes, com repasses programados.',
+        strategicObjective: 'Redução de medo',
+        difficulty: 4
+    },
+
+    // Operacional
+    {
+        id: 'operational-no-structure',
+        objection: 'Não tenho estrutura pra atender mais clientes',
+        category: 'Operacional',
+        response1: 'A ideia não é gerar picos ou sobrecarga operacional, mas sim manter a constância diária.',
+        response2: 'Controlamos rigorosamente os dias, horários e a quantidade de vendas conforme sua capacidade.',
+        strategicObjective: 'Tranquilidade operacional',
+        difficulty: 3
+    },
+    {
+        id: 'operational-already-full',
+        objection: 'Meu restaurante já vive cheio',
+        category: 'Operacional',
+        response1: 'Trabalhamos em dias e horários estratégicos justamente onde você ainda tem gaps de ocupação.',
+        response2: 'O objetivo é equilibrar o fluxo semanal, ocupando horários ociosos com público de qualidade.',
+        strategicObjective: 'Uso inteligente da plataforma',
+        difficulty: 2
+    },
+    {
+        id: 'operational-wrong-audience',
+        objection: 'Meu público não é esse',
+        category: 'Operacional',
+        response1: 'A Voppi trabalha com creators alinhados ao perfil exato da sua experiência gastronômica.',
+        response2: 'Nosso público busca viver bem e descobrir novos lugares, não é o caçador de oferta barata.',
+        strategicObjective: 'Confiança no público',
+        difficulty: 3
+    },
+    {
+        id: 'operational-bad-client',
+        objection: 'Tenho medo de cliente ruim',
+        category: 'Operacional',
+        response1: 'Nossa comunicação filtra as expectativas do cliente antes mesmo de ele chegar ao estabelecimento.',
+        response2: 'Hoje nossos parceiros relatam ticket médio e consumo extra maior do que a média de outros apps.',
+        strategicObjective: 'Segurança emocional',
+        difficulty: 4
+    },
+    {
+        id: 'operational-too-much-work',
+        objection: 'Vai dar muito trabalho pra mim',
+        category: 'Operacional',
+        response1: 'Nosso objetivo principal é reduzir seu trabalho. Nós cuidamos da mídia, artes e tecnologia.',
+        response2: 'A maioria das entregas de ativação e divulgação é feita 100% pelo nosso time interno.',
+        strategicObjective: 'Facilidade',
+        difficulty: 2
+    },
+
+    // Marketing
+    {
+        id: 'marketing-strong-insta',
+        objection: 'Já tenho Instagram forte',
+        category: 'Marketing',
+        response1: 'A Voppi soma audiência e força de venda, não substitui seu canal atual de comunicação.',
+        response2: 'Levamos sua marca além da sua "bolha" atual, alcançando pessoas que ainda não te conhecem.',
+        strategicObjective: 'Visão de complemento',
+        difficulty: 2
+    },
+    {
+        id: 'marketing-no-influencer',
+        objection: 'Não acredito em influencer',
+        category: 'Marketing',
+        response1: 'Não trabalhamos com "publi" genérica, mas com experiência real vivida pelo creator no seu local.',
+        response2: 'Conteúdo autêntico e de quem vive a experiência gera muito mais desejo e confiança do que um anúncio.',
+        strategicObjective: 'Reenquadrar creators',
+        difficulty: 3
+    },
+    {
+        id: 'marketing-paid-traffic',
+        objection: 'Já faço tráfego pago',
+        category: 'Marketing',
+        response1: 'A Voppi complementa seu esforço. Trazemos o cliente pronto pra consumir com o voucher na mão.',
+        response2: 'Você economiza no custo de aquisição (CAC), pois nós absorvemos parte desse esforço através da rede.',
+        strategicObjective: 'Sinergia de canais',
+        difficulty: 3
+    },
+
+    // Concorrência
+    {
+        id: 'competition-another-app',
+        objection: 'Já estou em outro app',
+        category: 'Concorrência',
+        response1: 'Isso é ótimo, mostra que você já acredita no canal digital como fonte de novos clientes.',
+        response2: 'A diferença é que a Voppi entrega um ecossistema completo com creators e curadoria, não só uma lista.',
+        strategicObjective: 'Diferenciação clara',
+        difficulty: 2
+    },
+    {
+        id: 'competition-cheaper',
+        objection: 'O concorrente cobra menos',
+        category: 'Concorrência',
+        response1: 'Geralmente quem cobra menos entrega muito menos visibilidade, tecnologia e suporte próximo.',
+        response2: 'Aqui você recebe muito mais do que visibilidade passiva: recebe artes, diagnóstico e curadoria ativa.',
+        strategicObjective: 'Valor > preço',
+        difficulty: 3
+    },
+
+    // Timing
+    {
+        id: 'timing-bad-moment',
+        objection: 'Agora não é o momento',
+        category: 'Timing',
+        response1: 'Entendo perfeitamente. O que precisaria mudar para ser o momento ideal na sua visão?',
+        response2: 'Muitas parcerias de sucesso começam justamente em momentos de transição para buscar novas receitas.',
+        strategicObjective: 'Diagnóstico real',
+        difficulty: 2
+    },
+    {
+        id: 'timing-later',
+        objection: 'Vamos ver depois',
+        category: 'Timing',
+        response1: 'Perfeito, respeito seu tempo. Posso te ligar em 15 dias para vermos como as coisas evoluíram?',
+        response2: 'Claro! Assim respeitamos seu timing operacional e garantimos que a decisão faça sentido.',
+        strategicObjective: 'Manter abertura',
+        difficulty: 2
+    },
+
+    // Autoridade
+    {
+        id: 'authority-new',
+        objection: 'Vocês são novos?',
+        category: 'Autoridade',
+        response1: 'Já temos anos de operação sólida no mercado e uma base de milhares de clientes ativos.',
+        response2: 'Temos reconhecimento consolidado no setor de lazer e turismo, com parcerias de grande renome.',
+        strategicObjective: 'Construção de credibilidade',
+        difficulty: 3
+    },
+    {
+        id: 'authority-who-else',
+        objection: 'Quem mais trabalha com vocês?',
+        category: 'Autoridade',
+        response1: 'Temos centenas de parceiros entre restaurantes, parques e experiências em todo o Brasil.',
+        response2: 'Posso te mostrar vários exemplos e cases de sucesso de negócios muito semelhantes ao seu.',
+        strategicObjective: 'Confiança',
+        difficulty: 2
+    },
+
+    // Experiência
+    {
+        id: 'experience-premium',
+        objection: 'Meu restaurante é premium',
+        category: 'Experiência',
+        response1: 'A Voppi funciona muito bem para marcas premium justamente pela curadoria exigente dos creators.',
+        response2: 'Nós não falamos de "desconto", falamos de benefícios exclusivos e acesso a experiências únicas.',
+        strategicObjective: 'Proteção de marca',
+        difficulty: 4
+    },
+    {
+        id: 'experience-neg-eval',
+        objection: 'Tenho medo de avaliação negativa',
+        category: 'Experiência',
+        response1: 'Nossa comunicação alinha totalmente a expectativa do cliente antes da compra da experiência.',
+        response2: 'Ajudamos ativamente no posicionamento da experiência para que o feedback seja sempre positivo.',
+        strategicObjective: 'Segurança',
+        difficulty: 3
+    },
+
+    // Contrato
+    {
+        id: 'contract-loyalty',
+        objection: 'Tem fidelidade?',
+        category: 'Contrato',
+        response1: 'Não trabalhamos com amarras longas. A parceria dura enquanto trouxer resultado real pra você.',
+        response2: 'Acreditamos no nosso valor: a parceria continua por mérito e satisfação mútua, sem multas rescisórias.',
+        strategicObjective: 'Redução de barreira',
+        difficulty: 2
+    },
+    {
+        id: 'contract-cancel',
+        objection: 'Posso sair quando quiser?',
+        category: 'Contrato',
+        response1: 'Sim, a qualquer momento, respeitando apenas a entrega das experiências já vendidas no site.',
+        response2: 'Transparência total desde o dia 1. Se não estiver feliz com os resultados, encerramos sem burocracia.',
+        strategicObjective: 'Confiança',
+        difficulty: 2
+    },
+
+    // Estratégia
+    {
+        id: 'strategy-diff',
+        objection: 'Qual o diferencial real da Voppi?',
+        category: 'Estratégia',
+        response1: 'A combinação de Marketplace + Rede de Creators + Ferramentas de Gestão + Benefícios.',
+        response2: 'É um ecossistema completo de vendas e visibilidade, não apenas um site de cupons.',
+        strategicObjective: 'Clareza de proposta',
+        difficulty: 3
+    },
+
+    // Público e Visão
+    {
+        id: 'audience-tourist-returns',
+        objection: 'Turista não volta',
+        category: 'Público',
+        response1: 'Mesmo que não volte, ele indica, gera conteúdo e fortalece sua reputação digital nacional.',
+        response2: 'A experiência vivida pelo turista tem valor de marca muito além da recompra imediata.',
+        strategicObjective: 'Visão de longo prazo',
+        difficulty: 3
+    },
+    {
+        id: 'vision-long-term',
+        objection: 'Longo prazo isso funciona?',
+        category: 'Visão',
+        response1: 'Funciona porque nosso modelo não depende de desconto agressivo, mas de curadoria de público.',
+        response2: 'Trabalhamos brand awareness, experiência do cliente e relacionamento duradouro com a base.',
+        strategicObjective: 'Sustentabilidade',
+        difficulty: 3
+    },
+
+    // --- NOVAS VARIAÇÕES (ESTRATÉGICAS VOPPI) ---
+    {
+        id: 'variation-commission-vs-ads',
+        objection: 'A comissão é alta comparada ao Google Ads',
+        category: 'Financeiro',
+        response1: 'No Google você paga pelo clique, aqui você só paga pela venda confirmada e consumida.',
+        response2: 'Aqui eliminamos seu risco: você só nos comissiona quando o lucro já está garantido na sua conta.',
+        strategicObjective: 'Custo por Aquisição (CAC) garantido',
+        difficulty: 4
+    },
+    {
+        id: 'variation-exclusive-creators',
+        objection: 'Posso contratar creators por fora sozinho',
+        category: 'Marketing',
+        response1: 'Pode, mas na Voppi cuidamos de toda a curadoria, agendamento, briefing e análise de métricas.',
+        response2: 'Nossa rede de creators já está integrada ao fluxo de venda imediata, o que potencializa o ROI.',
+        strategicObjective: 'Conveniência e Integração de Rede',
+        difficulty: 3
+    },
+    {
+        id: 'variation-abandonment-rate',
+        objection: 'Muita gente compra e não vem usar',
+        category: 'Operacional',
+        response1: 'Isso é ótimo pro seu caixa! Você recebeu pela venda e não teve o custo variável do produto.',
+        response2: 'Trabalhamos com validade de voucher. Se o cliente não vem, o repasse ocorre da mesma forma.',
+        strategicObjective: 'Vantagem do No-Show para o parceiro',
+        difficulty: 4
     }
 ];
+
+export function getObjectionById(id) {
+    return OBJECTIONS_DATA.find(obj => obj.id === id);
+}
+
+export function getRandomObjection(difficulty = null) {
+    let pool = OBJECTIONS_DATA;
+    if (difficulty) {
+        // Find closest difficulties if exact match not found
+        const exactMatch = pool.filter(obj => obj.difficulty === difficulty);
+        if (exactMatch.length > 0) pool = exactMatch;
+        else {
+            // Fallback to range
+            pool = pool.filter(obj => Math.abs(obj.difficulty - difficulty) <= 1);
+        }
+    }
+    const randomIndex = Math.floor(Math.random() * pool.length);
+    return pool[randomIndex];
+}
+
 
 export function getObjectionById(id) {
     return OBJECTIONS_DATA.find(obj => obj.id === id);
