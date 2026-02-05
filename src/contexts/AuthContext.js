@@ -88,9 +88,9 @@ export function AuthProvider({ children }) {
         });
 
         if (data.user && !error) {
-            // Create user profile
+            // Create or update user profile
             const isAdmin = email === 'thales@voppimais.com.br' || email === 'admin@voppi.com';
-            await supabase.from('users').insert({
+            await supabase.from('profiles').upsert({
                 id: data.user.id,
                 full_name: fullName,
                 role: isAdmin ? 'admin' : 'user',
@@ -99,7 +99,6 @@ export function AuthProvider({ children }) {
             });
         }
 
-        setLoading(true); // Should be false but following existing pattern or fixing it
         setLoading(false);
         return { data, error };
     };

@@ -64,7 +64,7 @@ export async function getCurrentUser() {
 // Helper function to get user profile
 export async function getUserProfile(userId) {
   const { data, error } = await supabase
-    .from('users')
+    .from('profiles')
     .select('*')
     .eq('id', userId)
     .single();
@@ -79,7 +79,7 @@ export async function getUserProfile(userId) {
 // Helper function to update user profile
 export async function updateUserProfile(userId, updates) {
   const { data, error } = await supabase
-    .from('users')
+    .from('profiles')
     .update(updates)
     .eq('id', userId)
     .select()

@@ -2,7 +2,8 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
@@ -10,7 +11,7 @@ import Card, { CardContent } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import styles from './page.module.css';
 
-const SCENARIOS = [
+const INITIAL_SCENARIOS = [
     {
         id: 'restaurante-decisor',
         title: 'Restaurante Grande - Decisor',
@@ -52,12 +53,51 @@ const SCENARIOS = [
 export default function RoleplayListPage() {
     const { user, loading } = useAuth();
     const router = useRouter();
+    const [scenarios, setScenarios] = useState([]);
+    const [fetching, setFetching] = useState(true);
 
     useEffect(() => {
         if (!loading && !user) {
             router.push('/login');
         }
     }, [user, loading, router]);
+
+    useEffect(() => {
+        async function fetchScenarios() {
+            setFetching(true);
+            try {
+                const { data, error } = await supabase
+                    .from('scenarios')
+                    .select('*')
+                    .eq('is_active', true)
+                    .order('difficulty', { ascending: true });
+
+                if (!error && data.length > 0) {
+                    setScenarios(data.map(s => ({
+                        id: s.slug || s.id,
+                        title: s.title,
+                        description: s.description,
+                        category: s.category,
+                        difficulty: s.difficulty,
+                        duration: s.duration || '10-15 min',
+                        icon: s.icon || '🎯',
+                        skills: s.skills || ['Geral'],
+                        completions: 0, // Would need another table join for real stats
+                        avgScore: 0
+                    })));
+                } else {
+                    // Fallback to initial hardcoded if DB is empty or error
+                    setScenarios(INITIAL_SCENARIOS);
+                }
+            } catch (err) {
+                console.error('Error fetching scenarios:', err);
+                setScenarios(INITIAL_SCENARIOS);
+            } finally {
+                setFetching(false);
+            }
+        }
+        if (user) fetchScenarios();
+    }, [user]);
 
     if (loading || !user) {
         return (
@@ -99,7 +139,7 @@ export default function RoleplayListPage() {
 
                     {/* Scenarios Grid */}
                     <div className={styles.scenariosGrid}>
-                        {SCENARIOS.map((scenario) => (
+                        {scenarios.map((scenario) => (
                             <Link
                                 key={scenario.id}
                                 href={`/roleplay/${scenario.id}`}
@@ -113,7 +153,7 @@ export default function RoleplayListPage() {
                                 </div>
 
                                 <h3 className={styles.scenarioTitle}>{scenario.title}</h3>
-                                <p className={styles.scenarioDescription}>{scenario.description}</p>
+                                <p className={scenario.description}>{scenario.description}</p>
 
                                 <div className={styles.scenarioSkills}>
                                     {scenario.skills.map((skill) => (

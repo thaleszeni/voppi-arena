@@ -39,38 +39,44 @@ const MOCK_SCENARIOS = [
 
 export default function HomePage() {
   const { user, profile, loading } = useAuth();
-  const [topUsers, setTopUsers] = useState([]);
-  const router = useRouter();
+  const [scenarios, setScenarios] = useState([]);
+  const [topUsers, setTopUsers] = useState([]); // Added missing state for topUsers
 
   useEffect(() => {
-    if (!loading && !user) {
-      router.push('/login');
-    }
-  }, [user, loading, router]);
-
-  useEffect(() => {
-    async function fetchTopUsers() {
-      if (!user) return;
+    async function fetchData() {
       try {
-        const { data, error } = await supabase
-          .from('users')
+        const { data: profilesData, error: profilesError } = await supabase
+          .from('profiles')
           .select('full_name, total_points, level')
           .order('total_points', { ascending: false })
           .limit(5);
 
-        if (!error) {
-          setTopUsers(data.map((p, i) => ({
+        if (!profilesError && profilesData) {
+          setTopUsers(profilesData.map((p, i) => ({
             rank: i + 1,
             name: p.full_name,
             points: p.total_points || 0,
             level: p.level || 1
           })));
         }
+
+        const { data: scenarioData, error: scenarioError } = await supabase
+          .from('scenarios')
+          .select('*')
+          .eq('is_active', true)
+          .limit(3);
+
+        if (!scenarioError && scenarioData && scenarioData.length > 0) {
+          setScenarios(scenarioData);
+        } else {
+          setScenarios(MOCK_SCENARIOS);
+        }
       } catch (err) {
-        console.error('Error fetching top users:', err);
+        console.error('Error in HomePage fetch:', err);
+        setScenarios(MOCK_SCENARIOS);
       }
     }
-    fetchTopUsers();
+    if (user) fetchData();
   }, [user]);
 
   if (loading || !user) {
@@ -153,10 +159,10 @@ export default function HomePage() {
               <Link href="/roleplay" className={styles.sectionLink}>Ver todos →</Link>
             </div>
             <div className={styles.scenariosGrid}>
-              {MOCK_SCENARIOS.map((scenario) => (
+              {scenarios.map((scenario) => (
                 <Link
                   key={scenario.id}
-                  href={user ? `/roleplay/${scenario.id}` : '/login'}
+                  href={user ? `/roleplay/${scenario.slug || scenario.id}` : '/login'}
                   className={styles.scenarioCard}
                 >
                   <div className={styles.scenarioIcon}>{scenario.icon}</div>

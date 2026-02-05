@@ -31,7 +31,7 @@ export default function RankingPage() {
 
             try {
                 const { data, error } = await supabase
-                    .from('users')
+                    .from('profiles')
                     .select('*')
                     .order('total_points', { ascending: false })
                     .limit(20);
