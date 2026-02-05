@@ -2,7 +2,8 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -90,24 +91,24 @@ export default function RankingPage() {
                     <div className={styles.podium}>
                         <div className={styles.podiumPlace + ' ' + styles.second}>
                             <div className={styles.podiumRank}>🥈</div>
-                            <Avatar name={LEADERBOARD_DATA[1].name} size="lg" />
-                            <div className={styles.podiumName}>{LEADERBOARD_DATA[1].name}</div>
-                            <div className={styles.podiumPoints}>{LEADERBOARD_DATA[1].points.toLocaleString()} pts</div>
-                            <Badge variant="secondary">N{LEADERBOARD_DATA[1].level}</Badge>
+                            <Avatar name={leaderboard[1]?.name || '...'} size="lg" />
+                            <div className={styles.podiumName}>{leaderboard[1]?.name || 'Carregando...'}</div>
+                            <div className={styles.podiumPoints}>{(leaderboard[1]?.points || 0).toLocaleString()} pts</div>
+                            <Badge variant="secondary">N{leaderboard[1]?.level || 1}</Badge>
                         </div>
                         <div className={styles.podiumPlace + ' ' + styles.first}>
                             <div className={styles.podiumRank}>🥇</div>
-                            <Avatar name={LEADERBOARD_DATA[0].name} size="xl" />
-                            <div className={styles.podiumName}>{LEADERBOARD_DATA[0].name}</div>
-                            <div className={styles.podiumPoints}>{LEADERBOARD_DATA[0].points.toLocaleString()} pts</div>
-                            <Badge variant="gold">N{LEADERBOARD_DATA[0].level}</Badge>
+                            <Avatar name={leaderboard[0]?.name || '...'} size="xl" />
+                            <div className={styles.podiumName}>{leaderboard[0]?.name || 'Carregando...'}</div>
+                            <div className={styles.podiumPoints}>{(leaderboard[0]?.points || 0).toLocaleString()} pts</div>
+                            <Badge variant="gold">N{leaderboard[0]?.level || 1}</Badge>
                         </div>
                         <div className={styles.podiumPlace + ' ' + styles.third}>
                             <div className={styles.podiumRank}>🥉</div>
-                            <Avatar name={LEADERBOARD_DATA[2].name} size="lg" />
-                            <div className={styles.podiumName}>{LEADERBOARD_DATA[2].name}</div>
-                            <div className={styles.podiumPoints}>{LEADERBOARD_DATA[2].points.toLocaleString()} pts</div>
-                            <Badge variant="bronze">N{LEADERBOARD_DATA[2].level}</Badge>
+                            <Avatar name={leaderboard[2]?.name || '...'} size="lg" />
+                            <div className={styles.podiumName}>{leaderboard[2]?.name || 'Carregando...'}</div>
+                            <div className={styles.podiumPoints}>{(leaderboard[2]?.points || 0).toLocaleString()} pts</div>
+                            <Badge variant="bronze">N{leaderboard[2]?.level || 1}</Badge>
                         </div>
                     </div>
 
@@ -126,7 +127,7 @@ export default function RankingPage() {
                                     <span className={styles.colAvg}>Média</span>
                                     <span className={styles.colPoints}>Pontos</span>
                                 </div>
-                                {LEADERBOARD_DATA.map((player, index) => (
+                                {leaderboard.map((player, index) => (
                                     <div
                                         key={player.rank}
                                         className={`${styles.tableRow} ${profile?.full_name === player.name ? styles.currentUser : ''}`}

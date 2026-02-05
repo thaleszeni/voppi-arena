@@ -1,6 +1,8 @@
 'use client';
 
 import { useAuth } from '@/contexts/AuthContext';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/lib/supabase';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import styles from './page.module.css';
@@ -33,10 +35,10 @@ const MOCK_SCENARIOS = [
   },
 ];
 
-const MOCK_LEADERBOARD = []; // Cleaned up mock data
 
 export default function HomePage() {
   const { user, profile, loading } = useAuth();
+  const [topUsers, setTopUsers] = useState([]);
   const router = useRouter();
 
   useEffect(() => {
@@ -44,6 +46,31 @@ export default function HomePage() {
       router.push('/login');
     }
   }, [user, loading, router]);
+
+  useEffect(() => {
+    async function fetchTopUsers() {
+      if (!user) return;
+      try {
+        const { data, error } = await supabase
+          .from('users')
+          .select('full_name, total_points, level')
+          .order('total_points', { ascending: false })
+          .limit(5);
+
+        if (!error) {
+          setTopUsers(data.map((p, i) => ({
+            rank: i + 1,
+            name: p.full_name,
+            points: p.total_points || 0,
+            level: p.level || 1
+          })));
+        }
+      } catch (err) {
+        console.error('Error fetching top users:', err);
+      }
+    }
+    fetchTopUsers();
+  }, [user]);
 
   if (loading || !user) {
     return (
@@ -154,18 +181,22 @@ export default function HomePage() {
               <Link href="/ranking" className={styles.sectionLink}>Ver ranking completo →</Link>
             </div>
             <div className={styles.leaderboard}>
-              {MOCK_LEADERBOARD.map((player) => (
-                <div key={player.rank} className={styles.leaderboardItem}>
-                  <span className={`${styles.leaderboardRank} ${styles[`rank${player.rank}`]}`}>
-                    {player.rank === 1 ? '🥇' : player.rank === 2 ? '🥈' : player.rank === 3 ? '🥉' : `#${player.rank}`}
-                  </span>
-                  <div className={styles.leaderboardInfo}>
-                    <span className={styles.leaderboardName}>{player.name}</span>
-                    <span className={styles.leaderboardLevel}>Nível {player.level}</span>
+              {topUsers.length > 0 ? (
+                topUsers.map((player) => (
+                  <div key={player.rank} className={styles.leaderboardItem}>
+                    <span className={`${styles.leaderboardRank} ${styles[`rank${player.rank}`]}`}>
+                      {player.rank === 1 ? '🥇' : player.rank === 2 ? '🥈' : player.rank === 3 ? '🥉' : `#${player.rank}`}
+                    </span>
+                    <div className={styles.leaderboardInfo}>
+                      <span className={styles.leaderboardName}>{player.name}</span>
+                      <span className={styles.leaderboardLevel}>Nível {player.level}</span>
+                    </div>
+                    <span className={styles.leaderboardPoints}>{player.points.toLocaleString()} pts</span>
                   </div>
-                  <span className={styles.leaderboardPoints}>{player.points.toLocaleString()} pts</span>
-                </div>
-              ))}
+                ))
+              ) : (
+                <p className={styles.emptyRanking}>Nenhum comercial ranqueado ainda.</p>
+              )}
             </div>
           </section>
 
