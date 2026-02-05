@@ -1,0 +1,281 @@
+.loadingContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: var(--space-4);
+    color: var(--text-secondary);
+}
+
+.loader {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--voppi-pink);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.pageWrapper {
+    display: flex;
+    padding-top: 64px;
+    min-height: 100vh;
+}
+
+.mainContent {
+    flex: 1;
+    margin-left: 280px;
+    padding: var(--space-8);
+    max-width: calc(100% - 280px);
+}
+
+@media (max-width: 1024px) {
+    .mainContent {
+        margin-left: 0;
+        max-width: 100%;
+    }
+}
+
+.pageHeader {
+    margin-bottom: var(--space-8);
+}
+
+.pageTitle {
+    font-size: var(--font-size-3xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
+    margin-bottom: var(--space-2);
+}
+
+.pageDescription {
+    font-size: var(--font-size-lg);
+    color: var(--text-secondary);
+}
+
+/* Podium */
+.podium {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    gap: var(--space-4);
+    margin-bottom: var(--space-8);
+    padding: var(--space-8);
+    background: linear-gradient(135deg, var(--voppi-purple-dark) 0%, var(--voppi-purple) 100%);
+    border-radius: var(--radius-2xl);
+}
+
+.podiumPlace {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: var(--space-6);
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-xl);
+    color: white;
+}
+
+.podiumPlace.first {
+    order: 2;
+    transform: scale(1.1);
+    background: linear-gradient(135deg, rgba(255, 215, 0, 0.3) 0%, rgba(255, 255, 255, 0.1) 100%);
+    border: 2px solid gold;
+}
+
+.podiumPlace.second {
+    order: 1;
+}
+
+.podiumPlace.third {
+    order: 3;
+}
+
+.podiumRank {
+    font-size: 32px;
+    margin-bottom: var(--space-2);
+}
+
+.podiumName {
+    font-weight: var(--font-weight-semibold);
+    margin-top: var(--space-2);
+    margin-bottom: var(--space-1);
+}
+
+.podiumPoints {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-bold);
+    color: var(--voppi-pink-light);
+    margin-bottom: var(--space-2);
+}
+
+/* Leaderboard Table */
+.leaderboardCard {
+    margin-bottom: var(--space-8);
+}
+
+.leaderboardTable {
+    display: flex;
+    flex-direction: column;
+}
+
+.tableHeader,
+.tableRow {
+    display: grid;
+    grid-template-columns: 60px 2fr 1fr 100px 80px 100px;
+    align-items: center;
+    padding: var(--space-4);
+    gap: var(--space-4);
+}
+
+.tableHeader {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-secondary);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.tableRow {
+    border-bottom: 1px solid var(--border-color);
+    transition: all var(--transition-fast);
+}
+
+.tableRow:last-child {
+    border-bottom: none;
+}
+
+.tableRow:hover {
+    background: var(--bg-tertiary);
+}
+
+.tableRow.currentUser {
+    background: rgba(255, 77, 157, 0.1);
+    border-left: 3px solid var(--voppi-pink);
+}
+
+.colRank {
+    font-weight: var(--font-weight-bold);
+    color: var(--text-secondary);
+    text-align: center;
+}
+
+.rankMedal {
+    font-size: var(--font-size-xl);
+}
+
+.colName {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.playerInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.playerName {
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+}
+
+.playerBadges {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+}
+
+.colRoleplays,
+.colAvg {
+    text-align: center;
+    color: var(--text-secondary);
+}
+
+.colPoints {
+    font-weight: var(--font-weight-bold);
+    color: var(--voppi-pink);
+    text-align: right;
+}
+
+@media (max-width: 1024px) {
+
+    .tableHeader,
+    .tableRow {
+        grid-template-columns: 50px 1fr 100px 80px;
+    }
+
+    .colLevel,
+    .colRoleplays {
+        display: none;
+    }
+}
+
+@media (max-width: 640px) {
+    .podium {
+        flex-direction: column;
+        align-items: center;
+    }
+
+    .podiumPlace.first {
+        order: 1;
+        transform: none;
+    }
+
+    .podiumPlace.second {
+        order: 2;
+    }
+
+    .podiumPlace.third {
+        order: 3;
+    }
+}
+
+/* Stats Grid */
+.statsGrid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: var(--space-4);
+}
+
+.statCard {
+    display: flex;
+    align-items: center;
+    gap: var(--space-4);
+}
+
+.statIcon {
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: linear-gradient(135deg, var(--voppi-purple) 0%, var(--voppi-pink) 100%);
+    border-radius: var(--radius-lg);
+    font-size: var(--font-size-xl);
+}
+
+.statInfo {
+    display: flex;
+    flex-direction: column;
+}
+
+.statValue {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
+}
+
+.statLabel {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+@media (max-width: 768px) {
+    .statsGrid {
+        grid-template-columns: 1fr;
+    }
+}

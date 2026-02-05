@@ -1,0 +1,523 @@
+.loadingContainer,
+.errorContainer {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    gap: var(--space-4);
+    color: var(--text-secondary);
+}
+
+.loader {
+    width: 48px;
+    height: 48px;
+    border: 3px solid var(--border-color);
+    border-top-color: var(--voppi-pink);
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Player Layout */
+.playerWrapper {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    background: var(--bg-primary);
+}
+
+.playerHeader {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: var(--space-4) var(--space-6);
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.backLink {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    color: var(--text-secondary);
+    text-decoration: none;
+    font-weight: var(--font-weight-medium);
+    transition: color var(--transition-fast);
+}
+
+.backLink:hover {
+    color: var(--voppi-pink);
+}
+
+.scenarioInfo {
+    display: flex;
+    align-items: center;
+    gap: var(--space-3);
+}
+
+.scenarioInfo h2 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+}
+
+.scorePreview {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    padding: var(--space-2) var(--space-4);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-full);
+    font-weight: var(--font-weight-semibold);
+    color: var(--voppi-pink);
+}
+
+.scoreIcon {
+    font-size: var(--font-size-lg);
+}
+
+/* Player Content */
+.playerContent {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+    padding: var(--space-8);
+}
+
+.dialogueContainer {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+    margin-bottom: var(--space-6);
+    position: relative;
+}
+
+/* Dialogue Bubbles */
+.dialogueBubble {
+    max-width: 85%;
+    padding: var(--space-4) var(--space-5);
+    border-radius: var(--radius-xl);
+    animation: slideUp 0.3s ease;
+}
+
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.dialogueBubble.system {
+    align-self: center;
+    max-width: 100%;
+    background: var(--bg-tertiary);
+    color: var(--text-secondary);
+    text-align: center;
+    font-style: italic;
+}
+
+.dialogueBubble.decisor,
+.dialogueBubble.funcionario {
+    align-self: flex-start;
+    background: var(--bg-card);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+.speakerName {
+    font-size: var(--font-size-xs);
+    font-weight: var(--font-weight-semibold);
+    color: var(--voppi-purple-light);
+    margin-bottom: var(--space-2);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.dialogueBubble p {
+    line-height: var(--line-height-relaxed);
+}
+
+/* Choices */
+.choicesContainer {
+    margin-top: auto;
+}
+
+.choicesTitle {
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-medium);
+    color: var(--text-secondary);
+    margin-bottom: var(--space-4);
+    text-align: center;
+}
+
+.choicesGrid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-3);
+}
+
+.choiceButton {
+    display: flex;
+    align-items: flex-start;
+    gap: var(--space-4);
+    padding: var(--space-4) var(--space-5);
+    background: var(--bg-card);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-xl);
+    text-align: left;
+    cursor: pointer;
+    transition: all var(--transition-fast);
+}
+
+.choiceButton:hover {
+    border-color: var(--voppi-pink);
+    background: var(--bg-card-hover);
+    transform: translateX(4px);
+}
+
+.choiceNumber {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: var(--voppi-purple);
+    color: white;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    flex-shrink: 0;
+}
+
+.choiceText {
+    color: var(--text-primary);
+    line-height: var(--line-height-relaxed);
+}
+
+/* Continue Button */
+.continueContainer {
+    display: flex;
+    justify-content: center;
+    margin-top: var(--space-6);
+}
+
+/* Feedback Overlay */
+.feedbackOverlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: var(--z-modal);
+    padding: var(--space-4);
+    animation: fadeIn 0.2s ease;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.feedbackCard {
+    max-width: 500px;
+    width: 100%;
+    animation: scaleIn 0.3s ease;
+}
+
+@keyframes scaleIn {
+    from {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+.feedbackHeader {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+}
+
+.feedbackIcon {
+    font-size: var(--font-size-2xl);
+}
+
+.feedbackHeader h4 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+}
+
+.feedbackText {
+    color: var(--text-primary);
+    margin-bottom: var(--space-4);
+    line-height: var(--line-height-relaxed);
+}
+
+.reasoningBox {
+    padding: var(--space-4);
+    background: var(--bg-tertiary);
+    border-radius: var(--radius-lg);
+    margin-bottom: var(--space-4);
+}
+
+.reasoningBox strong {
+    display: block;
+    font-size: var(--font-size-sm);
+    color: var(--voppi-pink);
+    margin-bottom: var(--space-2);
+}
+
+.reasoningBox p {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    line-height: var(--line-height-relaxed);
+}
+
+.pointsEarned {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-2);
+    margin-bottom: var(--space-4);
+}
+
+/* Player Footer */
+.playerFooter {
+    padding: var(--space-4) var(--space-6);
+    background: var(--bg-card);
+    border-top: 1px solid var(--border-color);
+}
+
+.progressIndicator {
+    text-align: center;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+}
+
+/* Results Screen */
+.resultsWrapper {
+    min-height: 100vh;
+    padding: var(--space-8);
+    background: var(--bg-primary);
+}
+
+.resultsContainer {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.resultsHeader {
+    text-align: center;
+    margin-bottom: var(--space-8);
+}
+
+.resultsBadge {
+    display: inline-block;
+    padding: var(--space-2) var(--space-6);
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-xl);
+    font-weight: var(--font-weight-bold);
+    margin-bottom: var(--space-4);
+}
+
+.resultsBadge.success {
+    background: linear-gradient(135deg, #10B981 0%, #059669 100%);
+    color: white;
+}
+
+.resultsBadge.partial {
+    background: linear-gradient(135deg, #F59E0B 0%, #D97706 100%);
+    color: white;
+}
+
+.resultsBadge.failure {
+    background: linear-gradient(135deg, #EF4444 0%, #DC2626 100%);
+    color: white;
+}
+
+.resultsHeader h1 {
+    font-size: var(--font-size-2xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--text-primary);
+    margin-bottom: var(--space-2);
+}
+
+.resultsMessage {
+    color: var(--text-secondary);
+}
+
+/* Score Card */
+.scoreCard {
+    background: linear-gradient(135deg, var(--voppi-purple-dark) 0%, var(--voppi-purple) 100%);
+    border-radius: var(--radius-2xl);
+    padding: var(--space-8);
+    color: white;
+    margin-bottom: var(--space-6);
+}
+
+.totalScore {
+    text-align: center;
+    margin-bottom: var(--space-8);
+}
+
+.scoreCircle {
+    display: inline-flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 140px;
+    height: 140px;
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: var(--radius-full);
+    margin-bottom: var(--space-2);
+}
+
+.scoreValue {
+    font-size: var(--font-size-4xl);
+    font-weight: var(--font-weight-bold);
+    color: var(--voppi-pink-light);
+}
+
+.scoreLabel {
+    font-size: var(--font-size-sm);
+    opacity: 0.8;
+}
+
+.scorePercentage {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-medium);
+    opacity: 0.9;
+}
+
+.criteriaGrid {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.criterionItem {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2);
+}
+
+.criterionHeader {
+    display: flex;
+    align-items: center;
+    gap: var(--space-2);
+}
+
+.criterionIcon {
+    font-size: var(--font-size-lg);
+}
+
+.criterionLabel {
+    flex: 1;
+    font-weight: var(--font-weight-medium);
+}
+
+.criterionScore {
+    font-weight: var(--font-weight-bold);
+    color: var(--voppi-pink-light);
+}
+
+/* Results Actions */
+.resultsActions {
+    display: flex;
+    gap: var(--space-4);
+    justify-content: center;
+    margin-bottom: var(--space-8);
+}
+
+/* History Card */
+.historyCard {
+    margin-top: var(--space-6);
+}
+
+.historyCard h3 {
+    font-size: var(--font-size-lg);
+    font-weight: var(--font-weight-semibold);
+    color: var(--text-primary);
+    margin-bottom: var(--space-4);
+}
+
+.historyList {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-4);
+}
+
+.historyItem {
+    display: flex;
+    gap: var(--space-4);
+}
+
+.historyNumber {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    background: var(--voppi-purple);
+    color: white;
+    border-radius: var(--radius-full);
+    font-size: var(--font-size-sm);
+    font-weight: var(--font-weight-bold);
+    flex-shrink: 0;
+}
+
+.historyContent {
+    flex: 1;
+}
+
+.historyChoice {
+    color: var(--text-primary);
+    margin-bottom: var(--space-1);
+}
+
+.historyFeedback {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    padding-left: var(--space-3);
+    border-left: 2px solid var(--voppi-pink);
+}
+
+@media (max-width: 768px) {
+    .playerContent {
+        padding: var(--space-4);
+    }
+
+    .resultsWrapper {
+        padding: var(--space-4);
+    }
+
+    .resultsActions {
+        flex-direction: column;
+    }
+}

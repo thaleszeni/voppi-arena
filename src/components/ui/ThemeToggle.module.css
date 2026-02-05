@@ -1,0 +1,46 @@
+.toggle {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 60px;
+    height: 32px;
+    background: var(--bg-tertiary);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-full);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    overflow: hidden;
+}
+
+.toggle:hover {
+    border-color: var(--voppi-pink);
+}
+
+.icon {
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+    opacity: 0.4;
+    transition: all var(--transition-fast);
+}
+
+.icon.active {
+    opacity: 1;
+}
+
+.slider {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    width: 26px;
+    height: 26px;
+    background: linear-gradient(135deg, var(--voppi-purple) 0%, var(--voppi-pink) 100%);
+    border-radius: var(--radius-full);
+    transition: transform var(--transition-normal);
+    z-index: 0;
+}

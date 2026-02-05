@@ -1,0 +1,135 @@
+.button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2);
+    padding: var(--space-3) var(--space-6);
+    font-size: var(--font-size-base);
+    font-weight: var(--font-weight-semibold);
+    line-height: 1;
+    border: none;
+    border-radius: var(--radius-lg);
+    cursor: pointer;
+    transition: all var(--transition-fast);
+    text-decoration: none;
+    white-space: nowrap;
+}
+
+.button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+/* Primary Button */
+.button--primary {
+    background: var(--accent-primary);
+    color: white;
+}
+
+.button--primary:hover:not(:disabled) {
+    background: var(--accent-primary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+.button--primary:active:not(:disabled) {
+    transform: translateY(0);
+}
+
+/* Secondary Button */
+.button--secondary {
+    background: var(--accent-secondary);
+    color: white;
+}
+
+.button--secondary:hover:not(:disabled) {
+    background: var(--accent-secondary-hover);
+    transform: translateY(-1px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Ghost Button */
+.button--ghost {
+    background: transparent;
+    color: var(--text-primary);
+    border: 1px solid var(--border-color);
+}
+
+.button--ghost:hover:not(:disabled) {
+    background: var(--bg-tertiary);
+    border-color: var(--voppi-pink);
+    color: var(--voppi-pink);
+}
+
+/* Outline Button */
+.button--outline {
+    background: transparent;
+    color: var(--accent-primary);
+    border: 2px solid var(--accent-primary);
+}
+
+.button--outline:hover:not(:disabled) {
+    background: var(--accent-primary);
+    color: white;
+}
+
+/* Danger Button */
+.button--danger {
+    background: var(--error);
+    color: white;
+}
+
+.button--danger:hover:not(:disabled) {
+    background: #dc2626;
+    transform: translateY(-1px);
+}
+
+/* Sizes */
+.button--sm {
+    padding: var(--space-2) var(--space-4);
+    font-size: var(--font-size-sm);
+}
+
+.button--lg {
+    padding: var(--space-4) var(--space-8);
+    font-size: var(--font-size-lg);
+}
+
+.button--xl {
+    padding: var(--space-5) var(--space-10);
+    font-size: var(--font-size-xl);
+}
+
+/* Full width */
+.button--full {
+    width: 100%;
+}
+
+/* Icon only */
+.button--icon {
+    padding: var(--space-3);
+    border-radius: var(--radius-full);
+}
+
+/* Loading state */
+.button--loading {
+    position: relative;
+    color: transparent !important;
+}
+
+.button--loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    border: 2px solid white;
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
