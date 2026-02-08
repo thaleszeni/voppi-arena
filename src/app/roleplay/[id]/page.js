@@ -311,6 +311,7 @@ export default function RoleplayPlayerPage() {
     if (isComplete) {
         return (
             <div className={styles.resultsWrapper}>
+                {/* Background sound stopped on results if desired, or keep generic success music */}
                 <div className={styles.resultsContainer}>
                     <div className={styles.resultsHeader}>
                         {finalResult?.result === 'success' && (
@@ -415,9 +416,28 @@ export default function RoleplayPlayerPage() {
         );
     }
 
+    // Sound Mapping
+    const SOUNDS = {
+        'restaurant_gatekeeper': 'https://assets.mixkit.co/sfx/preview/mixkit-busy-restaurant-ambience-442.mp3',
+        'restaurant_decision_maker': 'https://assets.mixkit.co/sfx/preview/mixkit-busy-restaurant-ambience-442.mp3',
+        'park': 'https://assets.mixkit.co/sfx/preview/mixkit-park-ambience-with-birds-and-people-1226.mp3',
+        'default': 'https://assets.mixkit.co/sfx/preview/mixkit-office-ambience-with-keyboard-typing-signals-443.mp3'
+    };
+
+    const ambientSoundUrl = SOUNDS[scenario.category] || SOUNDS.default;
+
     // Playing Screen
     return (
         <div className={styles.playerWrapper}>
+            {/* Ambient Audio Element */}
+            <audio
+                src={ambientSoundUrl}
+                autoPlay
+                loop
+                muted={false}
+                onPlay={() => console.log('Ambient sound playing')}
+                onError={(e) => console.log('Audio error:', e)}
+            />
             <div className={styles.playerHeader}>
                 <Link href="/roleplay" className={styles.backLink}>
                     ← Sair

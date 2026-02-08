@@ -12,6 +12,14 @@ import styles from './page.module.css';
 
 const ADMIN_SECTIONS = [
     {
+        id: 'analytics',
+        title: 'Dashboards & Analytics',
+        description: 'Analisar furos de conhecimento e performance do time',
+        icon: '📊',
+        href: '/admin/analytics',
+        stats: { label: 'Dados analisados', value: 'Tempo Real' },
+    },
+    {
         id: 'scenarios',
         title: 'Gerenciar Cenários',
         description: 'Criar, editar e visualizar cenários de roleplay',
@@ -34,14 +42,6 @@ const ADMIN_SECTIONS = [
         icon: '👥',
         href: '/admin/users',
         stats: { label: 'Usuários registrados', value: 10 },
-    },
-    {
-        id: 'challenges',
-        title: 'Desafios Semanais',
-        description: 'Configurar desafios e metas do time',
-        icon: '🏆',
-        href: '/admin/challenges',
-        stats: { label: 'Desafio ativo', value: 1 },
     },
 ];
 

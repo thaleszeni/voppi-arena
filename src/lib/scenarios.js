@@ -129,6 +129,8 @@ export const SCENARIOS_DATA = {
         description: 'Você está ligando para um restaurante de grande porte para oferecer a parceria Voppi.',
         category: 'restaurant_decision_maker',
         difficulty: 4,
+        minLevel: 3,
+        prerequisites: ['restaurante-gatekeeper'],
         startNodeId: 'node-1',
         nodes: {
             'node-1': {
@@ -405,6 +407,7 @@ export const SCENARIOS_DATA = {
         description: 'Você liga para um restaurante e quem atende é um funcionário. Seu objetivo é chegar ao dono.',
         category: 'restaurant_gatekeeper',
         difficulty: 2,
+        minLevel: 1,
         startNodeId: 'node-1',
         nodes: {
             'node-1': {
@@ -562,6 +565,8 @@ export const SCENARIOS_DATA = {
         description: 'Você está abordando um parque temático de médio porte para parceria com a Voppi.',
         category: 'park',
         difficulty: 4,
+        minLevel: 5,
+        prerequisites: ['restaurante-decisor'],
         startNodeId: 'node-1',
         nodes: {
             'node-1': {

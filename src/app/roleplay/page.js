@@ -13,18 +13,6 @@ import styles from './page.module.css';
 
 const INITIAL_SCENARIOS = [
     {
-        id: 'restaurante-decisor',
-        title: 'Restaurante Grande - Decisor',
-        description: 'Abordagem direta ao proprietário de um restaurante de grande porte. Foco em diagnóstico e proposta de valor.',
-        category: 'restaurant_decision_maker',
-        difficulty: 3,
-        duration: '10-15 min',
-        icon: '🍽️',
-        skills: ['Abertura', 'Diagnóstico', 'Objeções', 'Fechamento'],
-        completions: 45,
-        avgScore: 780,
-    },
-    {
         id: 'restaurante-gatekeeper',
         title: 'Restaurante - Gatekeeper',
         description: 'Estratégia para passar pelo funcionário e chegar ao decisor. Técnicas de rapport e persuasão.',
@@ -35,6 +23,21 @@ const INITIAL_SCENARIOS = [
         skills: ['Abertura', 'Rapport', 'Persuasão'],
         completions: 38,
         avgScore: 720,
+        minLevel: 1
+    },
+    {
+        id: 'restaurante-decisor',
+        title: 'Restaurante Grande - Decisor',
+        description: 'Abordagem direta ao proprietário de um restaurante de grande porte. Foco em diagnóstico e proposta de valor.',
+        category: 'restaurant_decision_maker',
+        difficulty: 3,
+        duration: '10-15 min',
+        icon: '🍽️',
+        skills: ['Abertura', 'Diagnóstico', 'Objeções', 'Fechamento'],
+        completions: 45,
+        avgScore: 780,
+        minLevel: 3,
+        prerequisites: ['restaurante-gatekeeper']
     },
     {
         id: 'parque-atracao',
@@ -47,13 +50,16 @@ const INITIAL_SCENARIOS = [
         skills: ['Diagnóstico', 'Negociação', 'Proposta', 'Fechamento'],
         completions: 22,
         avgScore: 690,
+        minLevel: 5,
+        prerequisites: ['restaurante-decisor']
     },
 ];
 
 export default function RoleplayListPage() {
-    const { user, loading } = useAuth();
+    const { user, profile, loading } = useAuth();
     const router = useRouter();
     const [scenarios, setScenarios] = useState([]);
+    const [completedSlugs, setCompletedSlugs] = useState([]);
     const [fetching, setFetching] = useState(true);
 
     useEffect(() => {
@@ -63,41 +69,74 @@ export default function RoleplayListPage() {
     }, [user, loading, router]);
 
     useEffect(() => {
-        async function fetchScenarios() {
+        async function fetchData() {
             setFetching(true);
             try {
+                // 1. Fetch user's successful attempts
+                const { data: history } = await supabase
+                    .from('attempts')
+                    .select('scenario_slug')
+                    .eq('user_id', user.id)
+                    .eq('result', 'success');
+
+                const successes = new Set(history?.map(h => h.scenario_slug) || []);
+                setCompletedSlugs(Array.from(successes));
+
+                // 2. Fetch scenarios
                 const { data, error } = await supabase
                     .from('scenarios')
                     .select('*')
                     .eq('is_active', true)
                     .order('difficulty', { ascending: true });
 
+                let list = [];
                 if (!error && data.length > 0) {
-                    setScenarios(data.map(s => ({
-                        id: s.slug || s.id,
-                        title: s.title,
-                        description: s.description,
-                        category: s.category,
-                        difficulty: s.difficulty,
-                        duration: s.duration || '10-15 min',
-                        icon: s.icon || '🎯',
-                        skills: s.skills || ['Geral'],
-                        completions: 0, // Would need another table join for real stats
-                        avgScore: 0
-                    })));
+                    list = data.map(s => {
+                        const localMeta = INITIAL_SCENARIOS.find(i => i.id === (s.slug || s.id)) || {};
+                        return {
+                            id: s.slug || s.id,
+                            title: s.title,
+                            description: s.description,
+                            category: s.category,
+                            difficulty: s.difficulty,
+                            duration: s.duration || '10-15 min',
+                            icon: s.icon || '🎯',
+                            skills: s.skills || ['Geral'],
+                            minLevel: s.min_level || localMeta.minLevel || 1,
+                            prerequisites: s.prerequisites || localMeta.prerequisites || [],
+                            completions: 0,
+                            avgScore: 0
+                        };
+                    });
                 } else {
-                    // Fallback to initial hardcoded if DB is empty or error
-                    setScenarios(INITIAL_SCENARIOS);
+                    list = INITIAL_SCENARIOS;
                 }
+
+                // Apply locking logic
+                const userLevel = profile?.level || 1;
+                const scenariosWithLock = list.map(s => {
+                    const levelLocked = userLevel < s.minLevel;
+                    const prereqLocked = s.prerequisites?.some(pre => !successes.has(pre));
+                    return {
+                        ...s,
+                        isLocked: levelLocked || prereqLocked,
+                        lockReason: levelLocked
+                            ? `Nível ${s.minLevel} necessário`
+                            : (prereqLocked ? 'Conclua os cenários anteriores' : null)
+                    };
+                });
+
+                setScenarios(scenariosWithLock);
+
             } catch (err) {
-                console.error('Error fetching scenarios:', err);
+                console.error('Error fetching data:', err);
                 setScenarios(INITIAL_SCENARIOS);
             } finally {
                 setFetching(false);
             }
         }
-        if (user) fetchScenarios();
-    }, [user]);
+        if (user) fetchData();
+    }, [user, profile]);
 
     if (loading || !user) {
         return (
@@ -139,49 +178,64 @@ export default function RoleplayListPage() {
 
                     {/* Scenarios Grid */}
                     <div className={styles.scenariosGrid}>
-                        {scenarios.map((scenario) => (
-                            <Link
-                                key={scenario.id}
-                                href={`/roleplay/${scenario.id}`}
-                                className={styles.scenarioCard}
-                            >
-                                <div className={styles.scenarioHeader}>
-                                    <div className={styles.scenarioIcon}>{scenario.icon}</div>
-                                    <div className={styles.scenarioDifficulty}>
-                                        {'⭐'.repeat(scenario.difficulty)}
+                        {scenarios.map((scenario) => {
+                            return (
+                                <div
+                                    key={scenario.id}
+                                    className={`${styles.scenarioCard} ${scenario.isLocked ? styles.locked : ''}`}
+                                >
+                                    <div className={styles.scenarioHeader}>
+                                        <div className={styles.scenarioIcon}>
+                                            {scenario.isLocked ? '🔒' : scenario.icon}
+                                        </div>
+                                        <div className={styles.scenarioDifficulty}>
+                                            {'⭐'.repeat(scenario.difficulty)}
+                                        </div>
                                     </div>
-                                </div>
 
-                                <h3 className={styles.scenarioTitle}>{scenario.title}</h3>
-                                <p className={scenario.description}>{scenario.description}</p>
+                                    <h3 className={styles.scenarioTitle}>{scenario.title}</h3>
+                                    <p className={styles.scenarioDescription}>{scenario.description}</p>
 
-                                <div className={styles.scenarioSkills}>
-                                    {scenario.skills.map((skill) => (
-                                        <Badge key={skill} variant="outline" size="sm">{skill}</Badge>
-                                    ))}
-                                </div>
+                                    {scenario.isLocked && (
+                                        <div className={styles.lockInfo}>
+                                            <Badge variant="danger" size="sm">{scenario.lockReason}</Badge>
+                                        </div>
+                                    )}
 
-                                <div className={styles.scenarioMeta}>
-                                    <div className={styles.scenarioStat}>
-                                        <span className={styles.statIcon}>⏱️</span>
-                                        <span>{scenario.duration}</span>
+                                    <div className={styles.scenarioSkills}>
+                                        {scenario.skills.map((skill) => (
+                                            <Badge key={skill} variant="outline" size="sm">{skill}</Badge>
+                                        ))}
                                     </div>
-                                    <div className={styles.scenarioStat}>
-                                        <span className={styles.statIcon}>👥</span>
-                                        <span>{scenario.completions} treinos</span>
-                                    </div>
-                                    <div className={styles.scenarioStat}>
-                                        <span className={styles.statIcon}>📈</span>
-                                        <span>Média: {scenario.avgScore}</span>
-                                    </div>
-                                </div>
 
-                                <div className={styles.scenarioAction}>
-                                    <span>Iniciar Treino</span>
-                                    <span>→</span>
+                                    <div className={styles.scenarioMeta}>
+                                        <div className={styles.scenarioStat}>
+                                            <span className={styles.statIcon}>⏱️</span>
+                                            <span>{scenario.duration}</span>
+                                        </div>
+                                        <div className={styles.scenarioStat}>
+                                            <span className={styles.statIcon}>👥</span>
+                                            <span>{scenario.completions} treinos</span>
+                                        </div>
+                                        <div className={styles.scenarioStat}>
+                                            <span className={styles.statIcon}>📈</span>
+                                            <span>Média: {scenario.avgScore}</span>
+                                        </div>
+                                    </div>
+
+                                    {!scenario.isLocked && (
+                                        <div className={styles.scenarioActions}>
+                                            <Link href={`/roleplay/${scenario.id}`} className={styles.actionBtn}>
+                                                <Button variant="outline" size="sm" fullWidth>Guided</Button>
+                                            </Link>
+                                            <Link href={`/roleplay/chat/${scenario.id}`} className={styles.actionBtn}>
+                                                <Button variant="primary" size="sm" fullWidth>Chat IA</Button>
+                                            </Link>
+                                        </div>
+                                    )}
                                 </div>
-                            </Link>
-                        ))}
+                            );
+                        })}
                     </div>
 
                     {/* Tips Section */}
@@ -220,8 +274,8 @@ export default function RoleplayListPage() {
                             </div>
                         </CardContent>
                     </Card>
-                </main>
-            </div>
+                </main >
+            </div >
         </>
     );
 }
