@@ -114,13 +114,21 @@ function callSimulation(messages, scenarioContext) {
 export async function evaluateRoleplay(history, scenarioContext) {
     const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
-    // If we have an API key, use it for a much better evaluation
-    if (apiKey) {
-        try {
-            const historyText = history.map(m => `${m.role === 'user' ? 'Vendedor' : 'Lead'}: ${m.content}`).join('\n');
-            const guidelines = COMPANY_CONTEXT.salesGuidelines || {};
+    // Default fallback structure
+    const fallbackResult = {
+        scores: { strategy: 50, clarity: 50, tone: 50, diagnosis: 50, closing: 50 },
+        feedback: "Houve um erro na avaliação. Tente novamente.",
+        totalXP: 50
+    };
 
-            const prompt = `
+    try {
+        // If we have an API key, use it for a much better evaluation
+        if (apiKey) {
+            try {
+                const historyText = history.map(m => `${m.role === 'user' ? 'Vendedor' : 'Lead'}: ${m.content}`).join('\n');
+                const guidelines = COMPANY_CONTEXT.salesGuidelines || {};
+
+                const prompt = `
                 Você é um treinador de vendas sênior da Voppi. Avalie a seguinte conversa de roleplay.
                 
                 CONTEXTO VOPPI:
@@ -151,90 +159,94 @@ export async function evaluateRoleplay(history, scenarioContext) {
                 }
             `;
 
-            const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({
-                    contents: [{ parts: [{ text: prompt }] }]
-                })
-            });
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        contents: [{ parts: [{ text: prompt }] }]
+                    })
+                });
 
-            const data = await response.json();
-            const text = data.candidates[0].content.parts[0].text;
+                const data = await response.json();
+                const text = data.candidates[0].content.parts[0].text;
 
-            // Clean markdown if present
-            const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
-            const result = JSON.parse(jsonStr);
+                // Clean markdown if present
+                const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+                const result = JSON.parse(jsonStr);
 
-            // Calculate total XP based on avg score
-            const avg = Object.values(result.scores).reduce((a, b) => a + b, 0) / 5;
+                // Calculate total XP based on avg score
+                const avg = Object.values(result.scores).reduce((a, b) => a + b, 0) / 5;
 
-            return {
-                scores: result.scores,
-                feedback: result.feedback,
-                totalXP: Math.round(avg * 2.5) // Scale up slightly
-            };
+                return {
+                    scores: result.scores,
+                    feedback: result.feedback,
+                    totalXP: Math.round(avg * 2.5) // Scale up slightly
+                };
 
-        } catch (err) {
-            console.error("AI Eval Error:", err);
-            // Fallback to heuristics below
+            } catch (err) {
+                console.error("AI Eval Error:", err);
+                // Fallback to heuristics below
+            }
         }
+
+        const userMessages = history.filter(m => m.role === 'user');
+        const lastMessage = userMessages[userMessages.length - 1]?.content.toLowerCase() || '';
+
+        // Default scores
+        let scores = {
+            strategy: 50,
+            clarity: 50,
+            tone: 50,
+            diagnosis: 20,
+            closing: 20
+        };
+
+        // Heuristics
+        const totalWords = userMessages.reduce((acc, msg) => acc + msg.content.split(' ').length, 0);
+        const avgWords = totalWords / (userMessages.length || 1);
+
+        // 1. Clarity: Short messages are better in chat
+        if (avgWords < 20) scores.clarity += 20;
+        if (avgWords < 10) scores.clarity += 10;
+
+        // 2. Diagnosis: Asking questions
+        const questionCount = userMessages.filter(m => m.content.includes('?')).length;
+        scores.diagnosis += Math.min(questionCount * 15, 60); // Max 80 total
+
+        // 3. Tone: Politeness keywords
+        const politeWords = ['obrigado', 'por favor', 'entendo', 'ótimo', 'certo'];
+        const hasPolite = userMessages.some(m => politeWords.some(w => m.content.toLowerCase().includes(w)));
+        if (hasPolite) scores.tone += 30;
+
+        // 4. Closing: Action words in the end
+        const closingWords = ['agendar', 'reunião', 'visita', 'amanhã', 'semana que vem', 'demo'];
+        if (closingWords.some(w => lastMessage.includes(w))) {
+            scores.closing += 60;
+            scores.strategy += 20;
+        }
+
+        // 5. Strategy: Engagement length (too short = bad, too long = bad)
+        if (userMessages.length >= 3 && userMessages.length <= 8) scores.strategy += 20;
+
+        // Cap scores at 100
+        Object.keys(scores).forEach(k => scores[k] = Math.min(100, scores[k]));
+
+        const totalXP = Math.round(
+            (scores.strategy + scores.clarity + scores.tone + scores.diagnosis + scores.closing) / 5 * 2 // ~200 XP avg
+        );
+
+        let feedback = "Bom esforço! ";
+        if (scores.closing < 50) feedback += "Você precisa tentar fechar a venda ou agendar um próximo passo no final. ";
+        if (scores.diagnosis < 50) feedback += "Faça mais perguntas para entender o cliente. ";
+        if (scores.clarity > 80) feedback += "Sua comunicação foi direta e clara. Parabéns!";
+
+        return {
+            scores,
+            feedback,
+            totalXP
+        };
+    } catch (err) {
+        console.error("Critical Error in evaluateRoleplay:", err);
+        return fallbackResult;
     }
-
-    const userMessages = history.filter(m => m.role === 'user');
-    const lastMessage = userMessages[userMessages.length - 1]?.content.toLowerCase() || '';
-
-    // Default scores
-    let scores = {
-        strategy: 50,
-        clarity: 50,
-        tone: 50,
-        diagnosis: 20,
-        closing: 20
-    };
-
-    // Heuristics
-    const totalWords = userMessages.reduce((acc, msg) => acc + msg.content.split(' ').length, 0);
-    const avgWords = totalWords / (userMessages.length || 1);
-
-    // 1. Clarity: Short messages are better in chat
-    if (avgWords < 20) scores.clarity += 20;
-    if (avgWords < 10) scores.clarity += 10;
-
-    // 2. Diagnosis: Asking questions
-    const questionCount = userMessages.filter(m => m.content.includes('?')).length;
-    scores.diagnosis += Math.min(questionCount * 15, 60); // Max 80 total
-
-    // 3. Tone: Politeness keywords
-    const politeWords = ['obrigado', 'por favor', 'entendo', 'ótimo', 'certo'];
-    const hasPolite = userMessages.some(m => politeWords.some(w => m.content.toLowerCase().includes(w)));
-    if (hasPolite) scores.tone += 30;
-
-    // 4. Closing: Action words in the end
-    const closingWords = ['agendar', 'reunião', 'visita', 'amanhã', 'semana que vem', 'demo'];
-    if (closingWords.some(w => lastMessage.includes(w))) {
-        scores.closing += 60;
-        scores.strategy += 20;
-    }
-
-    // 5. Strategy: Engagement length (too short = bad, too long = bad)
-    if (userMessages.length >= 3 && userMessages.length <= 8) scores.strategy += 20;
-
-    // Cap scores at 100
-    Object.keys(scores).forEach(k => scores[k] = Math.min(100, scores[k]));
-
-    const totalXP = Math.round(
-        (scores.strategy + scores.clarity + scores.tone + scores.diagnosis + scores.closing) / 5 * 2 // ~200 XP avg
-    );
-
-    let feedback = "Bom esforço! ";
-    if (scores.closing < 50) feedback += "Você precisa tentar fechar a venda ou agendar um próximo passo no final. ";
-    if (scores.diagnosis < 50) feedback += "Faça mais perguntas para entender o cliente. ";
-    if (scores.clarity > 80) feedback += "Sua comunicação foi direta e clara. Parabéns!";
-
-    return {
-        scores,
-        feedback,
-        totalXP
-    };
 }

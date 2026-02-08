@@ -90,7 +90,9 @@ export default function RoleplayListPage() {
                     .order('difficulty', { ascending: true });
 
                 let list = [];
-                if (!error && data.length > 0) {
+                // Check if data exists AND has length
+                if (!error && data && data.length > 0) {
+                    console.log("Scenarios loaded from DB:", data.length);
                     list = data.map(s => {
                         const localMeta = INITIAL_SCENARIOS.find(i => i.id === (s.slug || s.id)) || {};
                         return {
@@ -102,6 +104,7 @@ export default function RoleplayListPage() {
                             duration: s.duration || '10-15 min',
                             icon: s.icon || '🎯',
                             skills: s.skills || ['Geral'],
+                            // Ensure minLevel always has a value
                             minLevel: s.min_level || localMeta.minLevel || 1,
                             prerequisites: s.prerequisites || localMeta.prerequisites || [],
                             completions: 0,
@@ -109,6 +112,7 @@ export default function RoleplayListPage() {
                         };
                     });
                 } else {
+                    console.log("Using INITIAL_SCENARIOS fallback (DB empty or error). Error:", error);
                     list = INITIAL_SCENARIOS;
                 }
 

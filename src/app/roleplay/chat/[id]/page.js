@@ -102,19 +102,35 @@ export default function AIChatRoleplayPage() {
         };
         setXpBreakdown(breakdown);
 
-        // Save progress (simplified version of attempt persistence)
-        if (user && profile) {
-            const gainedXP = evalResult.totalXP;
-            const newExp = (profile.experience || 0) + gainedXP;
-            let newLevel = profile.level || 1;
-            const xpToNext = getXPForLevel(newLevel + 1);
-            if (newExp >= xpToNext) newLevel++;
+        // Save attempt to Supabase (triggers profile update via DB function)
+        if (user) {
+            try {
+                const { error } = await supabase.from('attempts').insert({
+                    user_id: user.id,
+                    scenario_id: scenario.id.length === 36 ? scenario.id : undefined, // Only if UUID
+                    scenario_slug: scenario.id, // Fallback for hardcoded
+                    score_strategy: evalResult.scores.strategy,
+                    score_clarity: evalResult.scores.clarity,
+                    score_tone: evalResult.scores.tone,
+                    score_diagnosis: evalResult.scores.diagnosis,
+                    score_closing: evalResult.scores.closing,
+                    total_score: evalResult.totalXP,
+                    xp_earned: evalResult.totalXP,
+                    result: 'success', // Always success if completed? Or depend on score?
+                    choice_history: messages,
+                    milestones_achieved: []
+                });
 
-            await updateProfile({
-                experience: newExp,
-                level: newLevel,
-                total_points: (profile.total_points || 0) + evalResult.scores.strategy * 10
-            });
+                if (error) {
+                    console.error('Error saving attempt:', error);
+                } else {
+                    console.log('Attempt saved successfully!');
+                    // Refresh profile to get new level/points from trigger
+                    if (updateProfile) updateProfile({});
+                }
+            } catch (err) {
+                console.error('Exception saving attempt:', err);
+            }
         }
     };
 

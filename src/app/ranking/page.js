@@ -28,6 +28,7 @@ export default function RankingPage() {
     useEffect(() => {
         async function fetchRanking() {
             if (!user) return;
+            console.log("Fetching ranking for user:", user.id);
 
             try {
                 const { data, error } = await supabase
@@ -36,19 +37,22 @@ export default function RankingPage() {
                     .order('total_points', { ascending: false })
                     .limit(20);
 
-                if (!error) {
+                if (error) {
+                    console.error('Error fetching ranking:', error);
+                } else {
+                    console.log("Ranking data:", data);
                     setLeaderboard(data.map((p, i) => ({
                         rank: i + 1,
-                        name: p.full_name,
+                        name: p.full_name || 'Usuário',
                         points: p.total_points || 0,
                         level: p.level || 1,
-                        badges: 3, // Placeholder or fetch real badges
-                        roleplays: 5, // Placeholder or fetch real attempts
+                        badges: 3, // Placeholder
+                        roleplays: 5, // Placeholder
                         avgScore: 75 // Placeholder
                     })));
                 }
             } catch (err) {
-                console.error('Error fetching ranking:', err);
+                console.error('Exception fetching ranking:', err);
             } finally {
                 setFetchingRank(false);
             }
