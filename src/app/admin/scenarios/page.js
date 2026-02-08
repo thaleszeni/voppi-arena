@@ -104,8 +104,8 @@ export default function AdminScenariosPage() {
                             <Button variant="outline" onClick={handleSeed}>
                                 🌱 Seed Inicial
                             </Button>
-                            <Button variant="primary" onClick={() => router.push('/admin/scenarios/new')}>
-                                + Novo Cenário
+                            <Button variant="primary" onClick={() => router.push('/admin/scenarios/builder')}>
+                                + Novo Cenário (Builder)
                             </Button>
                         </div>
                     </div>

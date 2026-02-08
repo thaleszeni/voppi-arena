@@ -4,6 +4,7 @@ import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { supabase } from '@/lib/supabase';
+import { generateScenarioStructure } from '@/lib/aiGenerator';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
@@ -23,6 +24,11 @@ export default function ScenarioBuilderPage() {
     const { user, profile, loading } = useAuth();
     const router = useRouter();
     const [currentStep, setCurrentStep] = useState(1);
+
+    // AI Magic State
+    const [showMagicModal, setShowMagicModal] = useState(false);
+    const [magicTopic, setMagicTopic] = useState('');
+    const [isGenerating, setIsGenerating] = useState(false);
 
     // Form State
     const [metadata, setMetadata] = useState({
@@ -70,6 +76,33 @@ export default function ScenarioBuilderPage() {
         if (currentStep > 1) setCurrentStep(curr => curr - 1);
     };
 
+    const handleMagicFill = async () => {
+        if (!magicTopic) return;
+        setIsGenerating(true);
+        try {
+            const generated = await generateScenarioStructure(magicTopic, metadata.difficulty === 1 ? 'easy' : 'normal');
+
+            // Populate State
+            if (generated.metadata) {
+                setMetadata(prev => ({ ...prev, ...generated.metadata }));
+            }
+            if (generated.persona) {
+                setPersona(prev => ({ ...prev, ...generated.persona }));
+            }
+            if (generated.nodes && Array.isArray(generated.nodes)) {
+                setNodes(generated.nodes);
+            }
+
+            setShowMagicModal(false);
+            alert('✨ Cenário gerado com sucesso! Revise os dados.');
+        } catch (err) {
+            console.error('Magic Fill Error:', err);
+            alert('Erro ao gerar cenário. Tente novamente.');
+        } finally {
+            setIsGenerating(false);
+        }
+    };
+
     const handleSave = async () => {
         // Build final JSON payload
         const scenarioPayload = {
@@ -84,8 +117,6 @@ export default function ScenarioBuilderPage() {
             nodes: { nodes }, // Wrap in object as existing structure expects
             start_node_id: 'start',
             is_active: false, // Default to inactive
-            // Store specific AI context in JSON too if needed or create separate column
-            // For now let's assume valid scenarios table structure
         };
 
         try {
@@ -125,6 +156,13 @@ export default function ScenarioBuilderPage() {
                                     <span>{step.title}</span>
                                 </div>
                             ))}
+                            <Button
+                                variant="outline"
+                                style={{ marginLeft: '1rem', borderColor: '#8b5cf6', color: '#8b5cf6' }}
+                                onClick={() => setShowMagicModal(true)}
+                            >
+                                ✨ Magic Fill
+                            </Button>
                         </div>
                     </div>
 
@@ -276,7 +314,7 @@ export default function ScenarioBuilderPage() {
                                                 {node.type === 'npc' && (
                                                     <div className={styles.optionsSection}>
                                                         <label>Opções de Resposta do Jogador:</label>
-                                                        {node.options.map((opt, optIndex) => (
+                                                        {node.options && node.options.map((opt, optIndex) => (
                                                             <div key={optIndex} className={styles.optionRow}>
                                                                 <Input
                                                                     value={opt.label}
@@ -323,6 +361,7 @@ export default function ScenarioBuilderPage() {
                                                             size="sm"
                                                             onClick={() => {
                                                                 const newNodes = [...nodes];
+                                                                if (!newNodes[index].options) newNodes[index].options = [];
                                                                 newNodes[index].options.push({ label: '', nextId: '', feedback: '' });
                                                                 setNodes(newNodes);
                                                             }}
@@ -401,6 +440,29 @@ export default function ScenarioBuilderPage() {
                             )}
                         </div>
                     </div>
+
+                    {/* Magic Modal */}
+                    {showMagicModal && (
+                        <div className={styles.modalOverlay}>
+                            <div className={styles.modalContent}>
+                                <h2>✨ Magic Fill (IA)</h2>
+                                <p>Descreva o cenário que você quer criar e a IA vai gerar a estrutura completa para você.</p>
+                                <textarea
+                                    className={styles.textarea}
+                                    placeholder="Ex: Venda de Plano Odontológico para um cliente que acha caro..."
+                                    value={magicTopic}
+                                    onChange={(e) => setMagicTopic(e.target.value)}
+                                    rows={4}
+                                />
+                                <div className={styles.modalActions}>
+                                    <Button variant="outline" onClick={() => setShowMagicModal(false)} disabled={isGenerating}>Cancelar</Button>
+                                    <Button variant="primary" onClick={handleMagicFill} disabled={isGenerating || !magicTopic}>
+                                        {isGenerating ? 'Gerando...' : 'Gerar Cenário'}
+                                    </Button>
+                                </div>
+                            </div>
+                        </div>
+                    )}
                 </main>
             </div>
         </>
