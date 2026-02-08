@@ -198,8 +198,8 @@ export default function AIChatRoleplayPage() {
             </div>
 
             <div className={styles.messagesList} ref={scrollRef}>
-                {messages.map((m, i) => (
-                    <div key={i} className={`${styles.message} ${styles[m.role]}`}>
+                {messages && messages.map((m, i) => (
+                    <div key={i} className={`${styles.message} ${m.role === 'assistant' ? styles.assistant : styles.user}`}>
                         <div className={styles.avatar}>{m.role === 'assistant' ? '👤' : '✉️'}</div>
                         <div className={styles.bubble}>{m.content}</div>
                     </div>

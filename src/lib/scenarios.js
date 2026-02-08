@@ -32,7 +32,7 @@ const CUSTOMER_TRAITS = [
     }
 ];
 
-const generateScenario = (templateOrId, difficulty = 'normal') => {
+export const generateScenario = (templateOrId, difficulty = 'normal') => {
     // Determine the base template
     let template;
     if (typeof templateOrId === 'string') {
