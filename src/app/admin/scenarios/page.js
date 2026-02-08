@@ -104,7 +104,7 @@ export default function AdminScenariosPage() {
                             <Button variant="outline" onClick={handleSeed}>
                                 🌱 Seed Inicial
                             </Button>
-                            <Button variant="primary">
+                            <Button variant="primary" onClick={() => router.push('/admin/scenarios/new')}>
                                 + Novo Cenário
                             </Button>
                         </div>
@@ -132,8 +132,13 @@ export default function AdminScenariosPage() {
                                         ))}
                                     </div>
                                     <div style={{ marginTop: '20px', display: 'flex', gap: '10px' }}>
-                                        <Button variant="ghost" size="sm">Editar</Button>
-                                        <Button variant="ghost" size="sm" style={{ color: '#ef4444' }}>Excluir</Button>
+                                        <Button variant="ghost" size="sm" onClick={() => router.push(`/admin/scenarios/edit/${s.id}`)}>Editar</Button>
+                                        <Button variant="ghost" size="sm" style={{ color: '#ef4444' }} onClick={async () => {
+                                            if (confirm('Tem certeza que deseja excluir este cenário?')) {
+                                                const { error } = await supabase.from('scenarios').delete().eq('id', s.id);
+                                                if (!error) fetchScenarios();
+                                            }
+                                        }}>Excluir</Button>
                                     </div>
                                 </CardContent>
                             </Card>

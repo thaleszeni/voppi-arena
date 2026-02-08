@@ -234,8 +234,10 @@ export default function RoleplayPlayerPage() {
                 if (error) {
                     console.error('Error saving attempt:', error);
                 } else {
-                    // Update user profile with XP
-                    const newExp = (profile?.experience || 0) + breakdown.total;
+                    // Update user profile with XP using updateProfile from context for immediate UI feedback
+                    const gainedXP = breakdown?.total || 0;
+                    const currentXP = profile?.experience || 0;
+                    const newExp = currentXP + gainedXP;
                     let newLevel = profile?.level || 1;
 
                     // Check for level up using gameConfig
@@ -244,19 +246,36 @@ export default function RoleplayPlayerPage() {
                         newLevel += 1;
                     }
 
+                    console.log('XP Update Debug:', {
+                        currentXP,
+                        gainedXP,
+                        newExp,
+                        newLevel,
+                        userId: user?.id
+                    });
+
                     // Streak calculation
                     const newStreak = calculateStreak(profile?.last_play_date, profile?.current_streak || 0);
 
-                    await supabase.from('profiles').update({
+                    const updates = {
                         experience: newExp,
                         level: newLevel,
                         total_points: (profile?.total_points || 0) + totalScoreValue,
                         current_streak: newStreak,
                         last_play_date: new Date().toISOString(),
                         next_level_xp: getXPForLevel(newLevel + 1)
-                    }).eq('id', user.id);
+                    };
 
-                    if (refreshProfile) refreshProfile();
+                    console.log('Sending updates to profile:', updates);
+
+                    const { error: profileError } = await updateProfile(updates);
+
+                    if (profileError) {
+                        console.error('Error updating profile XP:', profileError);
+                        alert('Erro ao salvar progresso: ' + profileError.message);
+                    } else {
+                        console.log('Profile updated successfully in DB and State');
+                    }
                 }
             } catch (err) {
                 console.error('Failed to save attempt:', err);

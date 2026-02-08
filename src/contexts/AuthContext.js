@@ -113,7 +113,12 @@ export function AuthProvider({ children }) {
     };
 
     const updateProfile = async (updates) => {
-        if (!user) return { error: { message: 'Usuário não autenticado' } };
+        if (!user) {
+            console.error('UpdateProfile failed: User not authenticated');
+            return { error: { message: 'Usuário não autenticado' } };
+        }
+
+        console.log('UpdateProfile called with:', updates);
 
         const { data, error } = await supabase
             .from('profiles')
@@ -121,7 +126,14 @@ export function AuthProvider({ children }) {
             .eq('id', user.id);
 
         if (!error) {
-            setProfile(prev => ({ ...prev, ...updates }));
+            console.log('UpdateProfile: Supabase update success. Updating local state...');
+            setProfile(prev => {
+                const newState = { ...prev, ...updates };
+                console.log('New Profile State:', newState);
+                return newState;
+            });
+        } else {
+            console.error('UpdateProfile: Supabase update error:', error);
         }
 
         return { data, error };
