@@ -13,7 +13,11 @@ CREATE TABLE IF NOT EXISTS profiles (
   full_name TEXT,
   avatar_url TEXT,
   role TEXT DEFAULT 'user' CHECK (role IN ('user', 'admin')),
-  level INTEGER DEFAULT 1 CHECK (level >= 1 AND level <= 5),
+  level INTEGER DEFAULT 1,
+  experience BIGINT DEFAULT 0,
+  next_level_xp BIGINT DEFAULT 100,
+  current_streak INTEGER DEFAULT 0,
+  last_play_date TIMESTAMP WITH TIME ZONE,
   total_points INTEGER DEFAULT 0,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
@@ -96,15 +100,18 @@ CREATE POLICY "Admins can delete scenarios" ON scenarios
 CREATE TABLE IF NOT EXISTS attempts (
   id UUID DEFAULT uuid_generate_v4() PRIMARY KEY,
   user_id UUID REFERENCES profiles(id) ON DELETE CASCADE NOT NULL,
-  scenario_id UUID REFERENCES scenarios(id) ON DELETE CASCADE NOT NULL,
+  scenario_id UUID REFERENCES scenarios(id) ON DELETE CASCADE,
+  scenario_slug TEXT,
   score_strategy INTEGER DEFAULT 0,
   score_clarity INTEGER DEFAULT 0,
   score_tone INTEGER DEFAULT 0,
   score_diagnosis INTEGER DEFAULT 0,
   score_closing INTEGER DEFAULT 0,
   total_score INTEGER DEFAULT 0,
+  xp_earned INTEGER DEFAULT 0,
   result TEXT CHECK (result IN ('success', 'partial', 'failure')),
   choice_history JSONB DEFAULT '[]',
+  milestones_achieved TEXT[] DEFAULT '{}',
   completed_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );

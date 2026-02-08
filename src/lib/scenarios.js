@@ -1,6 +1,5 @@
-
-// Import objections data
 import { OBJECTIONS_DATA, getRandomObjection } from './objections';
+import { LEAD_TYPES, MILESTONES } from './gameConfig';
 
 const CUSTOMER_TRAITS = [
     {
@@ -33,44 +32,55 @@ const CUSTOMER_TRAITS = [
     }
 ];
 
-const generateScenario = (templateId, difficulty = 'normal') => {
+const generateScenario = (templateOrId, difficulty = 'normal') => {
+    // Determine the base template
+    let template;
+    if (typeof templateOrId === 'string') {
+        template = SCENARIOS_DATA[templateOrId];
+    } else {
+        template = templateOrId;
+    }
+
+    if (!template) return null;
+
     // Deep copy to avoid mutating the template
-    const scenario = JSON.parse(JSON.stringify(SCENARIOS_DATA[templateId]));
+    const scenario = JSON.parse(JSON.stringify(template));
 
-    if (!scenario) return null;
+    const scenarioId = typeof templateOrId === 'string' ? templateOrId : (template.slug || template.id || 'dynamic');
+    scenario.instanceId = `${scenarioId}-${Date.now()}`;
 
-    scenario.instanceId = `${templateId}-${Date.now()}`;
+    // Pick a random lead type based on difficulty or just random
+    const leadTypeKeys = Object.keys(LEAD_TYPES);
+    const leadType = LEAD_TYPES[leadTypeKeys[Math.floor(Math.random() * leadTypeKeys.length)].toUpperCase()] || LEAD_TYPES.SIMPATIZANTE;
+    scenario.leadType = leadType;
 
-    // Pick a random customer trait for variability
-    const trait = CUSTOMER_TRAITS[Math.floor(Math.random() * CUSTOMER_TRAITS.length)];
-    scenario.customerTrait = trait;
-
-    // Logic to inject dynamic objections
+    // Logic to inject dynamic objections and milestones
     if (scenario.nodes) {
         Object.keys(scenario.nodes).forEach(nodeKey => {
             const node = scenario.nodes[nodeKey];
 
-            // Inject dynamic content into existing dialogue nodes if they have placeholders
+            // Inject lead type reactions
             if (node.type === 'dialogue' && node.content.includes('{trait_reaction}')) {
                 const reactions = {
-                    skeptical: 'Olha, eu sou bem pé atrás com essas coisas de internet...',
-                    analytic: 'Mas me diz, quais são os números reais disso?',
-                    friendly: 'Poxa, que legal o trabalho de vocês!',
-                    busy: 'Seja rápido porque tenho uma reunião em 5 minutos.'
+                    apressado: 'Olha, seja rápido, não tenho tempo a perder.',
+                    scetico: 'Hum... mais um querendo vender milagre na internet?',
+                    concorrente: 'Já usamos o iFood e estamos satisfeitos.',
+                    'whatsapp-trap': 'Pode me mandar tudo pelo WhatsApp?',
+                    'responde-seco': 'Pode ser. O que foi?',
+                    simpatizante: 'Oi! Que bom que ligou, estamos precisando de novidades.'
                 };
-                node.content = node.content.replace('{trait_reaction}', reactions[trait.id]);
+                node.content = node.content.replace('{trait_reaction}', reactions[leadType.id] || '');
             }
 
             if (node.type === 'objection_slot') {
                 const objection = getRandomObjection(node.difficultyFilter || scenario.difficulty);
 
                 if (objection) {
-                    // Transform the generic objection into scenario nodes
                     scenario.nodes[nodeKey] = {
                         id: node.id,
                         type: 'dialogue',
                         speaker: node.speaker || 'decisor',
-                        speakerName: node.speakerName || 'Cliente',
+                        speakerName: node.speakerName || leadType.name,
                         content: objection.objection,
                         nextNodeId: `${node.id}-response`,
                     };
@@ -79,19 +89,13 @@ const generateScenario = (templateId, difficulty = 'normal') => {
                         id: `${node.id}-response`,
                         type: 'choice',
                         speaker: 'system',
-                        content: `O cliente lançou uma objeção de ${objection.category}. Como responder?`,
+                        content: `O lead (${leadType.name}) lançou uma objeção. Como responder?`,
                         choices: [
                             {
                                 id: `${node.id}-c1`,
                                 text: objection.response1,
-                                points: {
-                                    strategy: 50,
-                                    clarity: 60,
-                                    tone: 60,
-                                    diagnosis: 40,
-                                    closing: 40,
-                                    [trait.bonusCriteria]: 10 // Tiny trait bonus
-                                },
+                                milestoneId: 'objection',
+                                points: { strategy: 50, clarity: 60, tone: 60, diagnosis: 40, closing: 40 },
                                 feedback: 'Resposta padrão. Funciona, mas não encanta.',
                                 reasoning: objection.strategicObjective,
                                 nextNodeId: node.nextNodeId
@@ -99,16 +103,10 @@ const generateScenario = (templateId, difficulty = 'normal') => {
                             {
                                 id: `${node.id}-c2`,
                                 text: objection.response2,
-                                points: {
-                                    strategy: 90,
-                                    clarity: 90,
-                                    tone: 90,
-                                    diagnosis: 80,
-                                    closing: 80,
-                                    [trait.bonusCriteria]: 20 // Strategic trait bonus
-                                },
-                                feedback: 'Excelente! Você usou uma abordagem estratégica e contornou a dor.',
-                                reasoning: `Alinhado com o objetivo: ${objection.strategicObjective}. Traço do cliente: ${trait.name}`,
+                                milestoneId: 'brief_handling',
+                                points: { strategy: 95, clarity: 90, tone: 90, diagnosis: 80, closing: 80 },
+                                feedback: 'Excelente! Contorno estratégico e direto.',
+                                reasoning: `Alinhado com: ${objection.strategicObjective}`,
                                 nextNodeId: node.nextNodeId
                             }
                         ]
@@ -171,6 +169,7 @@ export const SCENARIOS_DATA = {
                     {
                         id: 'choice-1c',
                         text: 'Bom dia! Aqui é [seu nome] da Voppi. Vi o perfil do Sabor & Arte e fiquei impressionado com as avaliações. Estou falando com o proprietário?',
+                        milestoneId: 'opening',
                         points: { strategy: 90, clarity: 85, tone: 95, diagnosis: 70, closing: 60 },
                         feedback: 'Excelente! Personalização + elogio genuíno + validação do decisor.',
                         reasoning: 'Mostrar que pesquisou o restaurante gera credibilidade e diferencia de cold calls genéricas.',
@@ -243,6 +242,7 @@ export const SCENARIOS_DATA = {
                     {
                         id: 'choice-3b',
                         text: 'A gente é marketplace de experiências, não só descontos. Temos curadoria forte e trabalhamos com creators pra divulgar. É bem diferente do modelo tradicional.',
+                        milestoneId: 'reason',
                         points: { strategy: 85, clarity: 80, tone: 85, diagnosis: 75, closing: 70 },
                         feedback: 'Ótimo! Curadoria + creators = proposta de valor única.',
                         reasoning: 'Destacar os diferenciais evita a armadilha de ser visto como "mais um Groupon".',
@@ -287,6 +287,7 @@ export const SCENARIOS_DATA = {
                     {
                         id: 'choice-5b',
                         text: 'Então, além da divulgação, no início a gente entrega um pacote completo: cardápio digital, linktree, pack de artes, diagnóstico comercial. Tudo isso por um setup único de R$ 697. Depois disso, você só paga comissão quando vender.',
+                        milestoneId: 'qualification',
                         points: { strategy: 90, clarity: 85, tone: 85, diagnosis: 80, closing: 75 },
                         feedback: 'Perfeito! Mostrou valor antes do preço e deixou claro o modelo.',
                         reasoning: 'Ancorar no valor das entregas faz o preço parecer justo.',
@@ -351,6 +352,7 @@ export const SCENARIOS_DATA = {
                     {
                         id: 'choice-7b',
                         text: 'Ótimo, Carlos! Posso agendar uma call rápida de 15 min pra gente fazer seu cadastro e você conhecer a plataforma? Prefere amanhã de manhã ou à tarde?',
+                        milestoneId: 'micro_closing',
                         points: { strategy: 95, clarity: 90, tone: 90, diagnosis: 85, closing: 95 },
                         feedback: 'Perfeito! Ofereceu opções concretas e assumiu o próximo passo.',
                         reasoning: 'Técnica de escolha alternativa: não pergunta SE, mas QUANDO.',
@@ -364,6 +366,7 @@ export const SCENARIOS_DATA = {
                 speaker: 'system',
                 content: '🎉 Parabéns! Você conseguiu agendar uma reunião de fechamento com Carlos!',
                 result: 'success',
+                milestoneId: 'confirmation',
             },
             'node-end-bad': {
                 id: 'node-end-bad',
@@ -783,6 +786,8 @@ export const SCENARIOS_DATA = {
         },
     },
 };
+
+export { generateScenario };
 
 export function getScenario(id) {
     if (SCENARIOS_DATA[id]) {

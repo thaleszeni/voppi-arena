@@ -12,44 +12,21 @@ import Badge from '@/components/ui/Badge';
 import Input from '@/components/ui/Input';
 import styles from '../page.module.css';
 
-const DEFAULT_SCENARIOS = [
-    {
-        slug: 'restaurante-decisor',
-        title: 'Restaurante Grande - Decisor',
-        description: 'Abordagem direta ao proprietário de um restaurante de grande porte. Foco em diagnóstico e proposta de valor.',
-        category: 'restaurant_decision_maker',
-        difficulty: 3,
-        duration: '10-15 min',
-        icon: '🍽️',
-        skills: ['Abertura', 'Diagnóstico', 'Objeções', 'Fechamento'],
-        start_node_id: 'start',
-        nodes: {} // Simplified for now
-    },
-    {
-        slug: 'restaurante-gatekeeper',
-        title: 'Restaurante - Gatekeeper',
-        description: 'Estratégia para passar pelo funcionário e chegar ao decisor. Técnicas de rapport e persuasão.',
-        category: 'restaurant_gatekeeper',
-        difficulty: 2,
-        duration: '8-12 min',
-        icon: '🚪',
-        skills: ['Abertura', 'Rapport', 'Persuasão'],
-        start_node_id: 'start',
-        nodes: {}
-    },
-    {
-        slug: 'parque-atracao',
-        title: 'Parque / Atração Turística',
-        description: 'Abordagem B2B para parques e atrações de grande volume. Foco em sazonalidade e parcerias.',
-        category: 'park',
-        difficulty: 4,
-        duration: '12-18 min',
-        icon: '🎢',
-        skills: ['Diagnóstico', 'Negociação', 'Proposta', 'Fechamento'],
-        start_node_id: 'start',
-        nodes: {}
-    },
-];
+import { SCENARIOS_DATA } from '@/lib/scenarios';
+
+const DEFAULT_SCENARIOS = Object.values(SCENARIOS_DATA).map(s => ({
+    slug: s.id, // Using s.id as slug
+    title: s.title,
+    description: s.description,
+    category: s.category,
+    difficulty: s.difficulty,
+    duration: s.duration || '10-15 min',
+    icon: s.icon,
+    skills: s.skills || [],
+    start_node_id: s.startNodeId,
+    nodes: s.nodes,
+    is_active: true
+}));
 
 export default function AdminScenariosPage() {
     const { user, isAdmin, loading } = useAuth();

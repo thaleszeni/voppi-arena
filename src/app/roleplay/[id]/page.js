@@ -2,9 +2,12 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter, useParams } from 'next/navigation';
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getScenario } from '@/lib/scenarios';
+import { getScenario, generateScenario } from '@/lib/scenarios';
+import { supabase } from '@/lib/supabase';
+import { MILESTONES, REWARDS, LEAD_TYPES, DIFFICULTY_RULES, getXPForLevel } from '@/lib/gameConfig';
+import { calculateStreak } from '@/lib/missions';
 import Button from '@/components/ui/Button';
 import Card, { CardContent } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
@@ -28,12 +31,12 @@ const CRITERIA_ICONS = {
 };
 
 export default function RoleplayPlayerPage() {
-    const { user, loading: authLoading } = useAuth();
+    const { user, profile, loading: authLoading, refreshProfile } = useAuth();
     const router = useRouter();
     const params = useParams();
 
-    const scenario = useMemo(() => getScenario(params.id), [params.id]);
-
+    const [scenario, setScenario] = useState(null);
+    const [fetchingScenario, setFetchingScenario] = useState(true);
     const [currentNodeId, setCurrentNodeId] = useState(null);
     const [history, setHistory] = useState([]);
     const [scores, setScores] = useState({
@@ -49,6 +52,13 @@ export default function RoleplayPlayerPage() {
     const [isComplete, setIsComplete] = useState(false);
     const [finalResult, setFinalResult] = useState(null);
 
+    // New Game State
+    const [achievedMilestones, setAchievedMilestones] = useState([]);
+    const [mode, setMode] = useState('guided');
+    const [userInput, setUserInput] = useState('');
+    const [isEvaluating, setIsEvaluating] = useState(false);
+    const [xpBreakdown, setXpBreakdown] = useState(null);
+
     useEffect(() => {
         if (!authLoading && !user) {
             router.push('/login');
@@ -56,10 +66,40 @@ export default function RoleplayPlayerPage() {
     }, [user, authLoading, router]);
 
     useEffect(() => {
-        if (scenario) {
-            setCurrentNodeId(scenario.startNodeId);
+        async function loadScenario() {
+            setFetchingScenario(true);
+            try {
+                // 1. Try hardcoded first (fastest)
+                let foundScenario = getScenario(params.id);
+
+                if (!foundScenario) {
+                    // 2. Try Supabase by slug or ID
+                    const { data, error } = await supabase
+                        .from('scenarios')
+                        .select('*')
+                        .or(`slug.eq."${params.id}",id.eq."${params.id.length === 36 ? params.id : '00000000-0000-0000-0000-000000000000'}"`)
+                        .single();
+
+                    if (!error && data) {
+                        foundScenario = generateScenario(data);
+                    }
+                }
+
+                if (foundScenario) {
+                    setScenario(foundScenario);
+                    setCurrentNodeId(foundScenario.startNodeId);
+                }
+            } catch (err) {
+                console.error('Error loading scenario:', err);
+            } finally {
+                setFetchingScenario(false);
+            }
         }
-    }, [scenario]);
+
+        if (params.id) {
+            loadScenario();
+        }
+    }, [params.id]);
 
     const currentNode = scenario?.nodes?.[currentNodeId];
 
@@ -79,6 +119,11 @@ export default function RoleplayPlayerPage() {
             }));
         }
 
+        // Milestone Tracking
+        if (choice.milestoneId && !achievedMilestones.includes(choice.milestoneId)) {
+            setAchievedMilestones(prev => [...prev, choice.milestoneId]);
+        }
+
         // Add to history
         setHistory(prev => [...prev, {
             nodeId: currentNodeId,
@@ -95,8 +140,7 @@ export default function RoleplayPlayerPage() {
         if (nextNodeId) {
             const nextNode = scenario.nodes[nextNodeId];
             if (nextNode?.type === 'end') {
-                setIsComplete(true);
-                setFinalResult(nextNode);
+                finishRoleplay(nextNode);
             } else {
                 setCurrentNodeId(nextNodeId);
             }
@@ -109,10 +153,113 @@ export default function RoleplayPlayerPage() {
         if (currentNode?.nextNodeId) {
             const nextNode = scenario.nodes[currentNode.nextNodeId];
             if (nextNode?.type === 'end') {
-                setIsComplete(true);
-                setFinalResult(nextNode);
+                finishRoleplay(nextNode);
             } else {
                 setCurrentNodeId(currentNode.nextNodeId);
+            }
+        }
+    };
+
+    const handleFreeModeSubmit = async () => {
+        if (!userInput.trim()) return;
+        setIsEvaluating(true);
+
+        // Simulation of evaluation
+        // In a real app, this would call an AI API
+        setTimeout(() => {
+            // Pick a choice based on text similarity (very basic)
+            const choices = currentNode.choices;
+            let bestChoice = choices[Math.floor(Math.random() * choices.length)]; // Fallback
+
+            // Try to find a choice that contains some keywords from userInput
+            for (const choice of choices) {
+                const words = choice.text.toLowerCase().split(' ').filter(w => w.length > 4);
+                if (words.some(w => userInput.toLowerCase().includes(w))) {
+                    bestChoice = choice;
+                    break;
+                }
+            }
+
+            handleChoice(bestChoice);
+            setUserInput('');
+            setIsEvaluating(false);
+        }, 1500);
+    };
+
+    const finishRoleplay = async (resultNode) => {
+        setIsComplete(true);
+        setFinalResult(resultNode);
+
+        // Calculate XP
+        const scorePercentage = Math.round((Object.values(scores).reduce((a, b) => a + b, 0) / (choiceCount * 500)) * 100) || 0;
+        const difficultyKey = (scenario?.difficulty >= 4 ? 'advanced' : scenario?.difficulty >= 3 ? 'intermediate' : 'beginner');
+        const diffRule = DIFFICULTY_RULES[difficultyKey];
+
+        const breakdown = {
+            conclusion: REWARDS.CONCLUSION,
+            performance: scorePercentage >= 90 ? REWARDS.PERFORMANCE.GOD_LIKE.xp :
+                scorePercentage >= 75 ? REWARDS.PERFORMANCE.PRO.xp :
+                    scorePercentage >= 60 ? REWARDS.PERFORMANCE.GOOD.xp :
+                        REWARDS.PERFORMANCE.POOR.xp,
+            difficulty: diffRule.bonusXP,
+            evolution: 0, // Placeholder
+            total: 0
+        };
+        breakdown.total = breakdown.conclusion + breakdown.performance + breakdown.difficulty;
+        setXpBreakdown(breakdown);
+
+        // Persistent save to DB
+        if (user && scenario) {
+            try {
+                const totalScoreValue = Object.values(scores).reduce((a, b) => a + b, 0);
+
+                const { error } = await supabase
+                    .from('attempts')
+                    .insert({
+                        user_id: user.id,
+                        scenario_id: scenario.id.length === 36 ? scenario.id : null,
+                        scenario_slug: scenario.slug || scenario.id,
+                        score_strategy: scores.strategy,
+                        score_clarity: scores.clarity,
+                        score_tone: scores.tone,
+                        score_diagnosis: scores.diagnosis,
+                        score_closing: scores.closing,
+                        total_score: totalScoreValue,
+                        xp_earned: breakdown.total,
+                        result: resultNode.result,
+                        choice_history: history,
+                        milestones_achieved: achievedMilestones,
+                    });
+
+                if (error) {
+                    console.error('Error saving attempt:', error);
+                } else {
+                    // Update user profile with XP
+                    const newExp = (profile?.experience || 0) + breakdown.total;
+                    let newLevel = profile?.level || 1;
+
+                    // Check for level up using gameConfig
+                    const xpToNext = getXPForLevel(newLevel + 1);
+                    if (newExp >= xpToNext) {
+                        newLevel += 1;
+                    }
+
+                    // Streak calculation
+                    const newStreak = calculateStreak(profile?.last_play_date, profile?.current_streak || 0);
+
+                    await supabase.from('profiles').update({
+                        experience: newExp,
+                        level: newLevel,
+                        total_points: (profile?.total_points || 0) + totalScoreValue,
+                        current_streak: newStreak,
+                        last_play_date: new Date().toISOString(),
+                        next_level_xp: getXPForLevel(newLevel + 1)
+                    }).eq('id', user.id);
+
+                    if (refreshProfile) refreshProfile();
+                }
+            } catch (err) {
+                console.error('Failed to save attempt:', err);
             }
         }
     };
@@ -121,7 +268,7 @@ export default function RoleplayPlayerPage() {
     const maxPossibleScore = choiceCount * 500; // 100 per criterion * 5 criteria
     const scorePercentage = maxPossibleScore > 0 ? Math.round((totalScore / maxPossibleScore) * 100) : 0;
 
-    if (authLoading || !user) {
+    if (authLoading || fetchingScenario) {
         return (
             <div className={styles.loadingContainer}>
                 <div className={styles.loader}></div>
@@ -192,6 +339,27 @@ export default function RoleplayPlayerPage() {
                                 );
                             })}
                         </div>
+
+                        {xpBreakdown && (
+                            <div className={styles.xpSummary}>
+                                <div className={styles.xpRow}>
+                                    <span className={styles.xpLabel}>Conclusão</span>
+                                    <span className={styles.xpValue}>+{xpBreakdown.conclusion} XP</span>
+                                </div>
+                                <div className={styles.xpRow}>
+                                    <span className={styles.xpLabel}>Performance ({scorePercentage}%)</span>
+                                    <span className={styles.xpValue}>+{xpBreakdown.performance} XP</span>
+                                </div>
+                                <div className={styles.xpRow}>
+                                    <span className={styles.xpLabel}>Dificuldade</span>
+                                    <span className={styles.xpValue}>+{xpBreakdown.difficulty} XP</span>
+                                </div>
+                                <div className={styles.xpRow}>
+                                    <span className={styles.totalLabel}>Total Ganhos</span>
+                                    <span className={styles.totalValue}>+{xpBreakdown.total} XP</span>
+                                </div>
+                            </div>
+                        )}
                     </div>
 
                     <div className={styles.resultsActions}>
@@ -239,11 +407,25 @@ export default function RoleplayPlayerPage() {
                     <h2>{scenario.title}</h2>
                     <div className={styles.metaBadges}>
                         <Badge variant="outline">{'⭐'.repeat(scenario.difficulty)}</Badge>
-                        {scenario.customerTrait && (
-                            <Badge variant="secondary" title={scenario.customerTrait.description}>
-                                {scenario.customerTrait.icon} {scenario.customerTrait.name}
+                        {scenario.leadType && (
+                            <Badge variant="secondary" title={scenario.leadType.description}>
+                                {scenario.leadType.icon} {scenario.leadType.name}
                             </Badge>
                         )}
+                        <div className={styles.modeToggle}>
+                            <button
+                                className={`${styles.modeBtn} ${mode === 'guided' ? styles.active : ''}`}
+                                onClick={() => setMode('guided')}
+                            >
+                                Guided
+                            </button>
+                            <button
+                                className={`${styles.modeBtn} ${mode === 'free' ? styles.active : ''}`}
+                                onClick={() => setMode('free')}
+                            >
+                                Free
+                            </button>
+                        </div>
                     </div>
                 </div>
                 <div className={styles.scorePreview}>
@@ -252,12 +434,26 @@ export default function RoleplayPlayerPage() {
                 </div>
             </div>
 
-            {scenario.customerTrait && !isComplete && (
+            {/* Milestones Progress */}
+            <div className={styles.milestonesBar}>
+                {MILESTONES.map(m => (
+                    <div
+                        key={m.id}
+                        className={`${styles.milestoneDot} ${achievedMilestones.includes(m.id) ? styles.achieved : ''}`}
+                        title={m.label}
+                    >
+                        <span className={styles.milestoneTooltip}>{m.label}</span>
+                    </div>
+                ))}
+            </div>
+
+            {scenario.leadType && !isComplete && (
                 <div className={styles.traitAlert}>
-                    <span className={styles.traitIcon}>{scenario.customerTrait.icon}</span>
+                    <span className={styles.traitIcon}>{scenario.leadType.icon}</span>
                     <div className={styles.traitText}>
-                        <strong>Perfil do Cliente: {scenario.customerTrait.name}</strong>
-                        <p>{scenario.customerTrait.description}</p>
+                        <strong>Lead Type: {scenario.leadType.name}</strong>
+                        <p>{scenario.leadType.description}</p>
+                        <em className={styles.leadMod}>{scenario.leadType.promptMod}</em>
                     </div>
                 </div>
             )}
@@ -307,19 +503,44 @@ export default function RoleplayPlayerPage() {
                 {/* Choice Options */}
                 {currentNode?.type === 'choice' && !showFeedback && (
                     <div className={styles.choicesContainer}>
-                        <h4 className={styles.choicesTitle}>Escolha sua resposta:</h4>
-                        <div className={styles.choicesGrid}>
-                            {currentNode.choices.map((choice, index) => (
-                                <button
-                                    key={choice.id}
-                                    className={styles.choiceButton}
-                                    onClick={() => handleChoice(choice)}
-                                >
-                                    <span className={styles.choiceNumber}>{index + 1}</span>
-                                    <span className={styles.choiceText}>{choice.text}</span>
-                                </button>
-                            ))}
-                        </div>
+                        {mode === 'guided' ? (
+                            <>
+                                <h4 className={styles.choicesTitle}>Escolha sua resposta:</h4>
+                                <div className={styles.choicesGrid}>
+                                    {currentNode.choices.slice(0, 3).map((choice, index) => (
+                                        <button
+                                            key={choice.id}
+                                            className={styles.choiceButton}
+                                            onClick={() => handleChoice(choice)}
+                                        >
+                                            <span className={styles.choiceNumber}>{index + 1}</span>
+                                            <span className={styles.choiceText}>{choice.text}</span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </>
+                        ) : (
+                            <div className={styles.freeModeContainer}>
+                                <textarea
+                                    className={styles.freeTextarea}
+                                    placeholder="Digite sua resposta aqui..."
+                                    value={userInput}
+                                    onChange={(e) => setUserInput(e.target.value)}
+                                    disabled={isEvaluating}
+                                />
+                                <div className={styles.freeActions}>
+                                    <Button
+                                        variant="primary"
+                                        disabled={!userInput.trim() || isEvaluating}
+                                        onClick={handleFreeModeSubmit}
+                                        fullWidth
+                                    >
+                                        {isEvaluating ? 'Avaliando...' : 'Enviar Resposta'}
+                                    </Button>
+                                    <p className={styles.freeHint}>Foque em: Ser direto e contornar a dor do lead.</p>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 )}
 

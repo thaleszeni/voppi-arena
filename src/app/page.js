@@ -11,7 +11,7 @@ import Link from 'next/link';
 
 const MOCK_SCENARIOS = [
   {
-    id: 1,
+    id: 'restaurante-decisor',
     title: 'Restaurante Grande - Decisor',
     description: 'Abordagem direta ao proprietário de um restaurante de grande porte',
     category: 'restaurant_decision_maker',
@@ -19,7 +19,7 @@ const MOCK_SCENARIOS = [
     icon: '🍽️',
   },
   {
-    id: 2,
+    id: 'restaurante-gatekeeper',
     title: 'Restaurante - Gatekeeper',
     description: 'Estratégia para passar pelo funcionário e chegar ao decisor',
     category: 'restaurant_gatekeeper',
@@ -27,7 +27,7 @@ const MOCK_SCENARIOS = [
     icon: '🚪',
   },
   {
-    id: 3,
+    id: 'parque-atracao',
     title: 'Parque / Atração Turística',
     description: 'Abordagem B2B para parques e atrações de grande volume',
     category: 'park',
@@ -38,6 +38,7 @@ const MOCK_SCENARIOS = [
 
 
 export default function HomePage() {
+  const router = useRouter();
   const { user, profile, loading } = useAuth();
   const [scenarios, setScenarios] = useState([]);
   const [topUsers, setTopUsers] = useState([]); // Added missing state for topUsers
@@ -79,13 +80,23 @@ export default function HomePage() {
     if (user) fetchData();
   }, [user]);
 
-  if (loading || !user) {
+  useEffect(() => {
+    if (!loading && !user) {
+      router.push('/login');
+    }
+  }, [user, loading, router]);
+
+  if (loading) {
     return (
       <div className={styles.loadingContainer}>
         <div className={styles.loader}></div>
         <p>Carregando...</p>
       </div>
     );
+  }
+
+  if (!user) {
+    return null; // Will redirect via useEffect
   }
 
   return (
@@ -120,8 +131,28 @@ export default function HomePage() {
             </div>
           </section>
 
-          {/* Quick Stats */}
+          {/* Quick Stats & Progress */}
           <section className={styles.statsSection}>
+            <div className={styles.statCard}>
+              <div className={styles.statIcon}>🔥</div>
+              <div className={styles.statInfo}>
+                <span className={styles.statValue}>{profile?.current_streak || 0} dias</span>
+                <span className={styles.statLabel}>Sua Sequência</span>
+              </div>
+            </div>
+            <div className={styles.statCard}>
+              <div className={styles.statIcon}>⭐</div>
+              <div className={styles.statInfo}>
+                <span className={styles.statValue}>Nível {profile?.level || 1}</span>
+                <div className={styles.levelProgress}>
+                  <div
+                    className={styles.levelBar}
+                    style={{ width: `${Math.min((profile?.experience || 0) / (profile?.next_level_xp || 100) * 100, 100)}%` }}
+                  ></div>
+                </div>
+                <span className={styles.statLabel}>{profile?.experience || 0} / {profile?.next_level_xp || 100} XP</span>
+              </div>
+            </div>
             <div className={styles.statCard}>
               <div className={styles.statIcon}>🎯</div>
               <div className={styles.statInfo}>
@@ -130,24 +161,33 @@ export default function HomePage() {
               </div>
             </div>
             <div className={styles.statCard}>
-              <div className={styles.statIcon}>⭐</div>
+              <div className={styles.statIcon}>🏆</div>
               <div className={styles.statInfo}>
-                <span className={styles.statValue}>N{profile?.level || 1}</span>
-                <span className={styles.statLabel}>Seu Nível</span>
+                <span className={styles.statValue}>#{topUsers.find(u => u.name === profile?.full_name)?.rank || '--'}</span>
+                <span className={styles.statLabel}>No Ranking</span>
               </div>
             </div>
-            <div className={styles.statCard}>
-              <div className={styles.statIcon}>🏅</div>
-              <div className={styles.statInfo}>
-                <span className={styles.statValue}>3</span>
-                <span className={styles.statLabel}>Badges</span>
-              </div>
+          </section>
+
+          {/* Daily Missions Preview */}
+          <section className={styles.missionsPreview}>
+            <div className={styles.sectionHeader}>
+              <h2 className={styles.sectionTitle}>📅 Missões Diárias</h2>
             </div>
-            <div className={styles.statCard}>
-              <div className={styles.statIcon}>📊</div>
-              <div className={styles.statInfo}>
-                <span className={styles.statValue}>#1</span>
-                <span className={styles.statLabel}>Ranking</span>
+            <div className={styles.missionsGrid}>
+              <div className={styles.missionItem}>
+                <div className={styles.missionCheck}>✅</div>
+                <div className={styles.missionText}>
+                  <strong>Completar 1 rodada</strong>
+                  <span>Recompensa: +50 XP</span>
+                </div>
+              </div>
+              <div className={styles.missionItem}>
+                <div className={styles.missionCheck + ' ' + styles.pending}>⭕</div>
+                <div className={styles.missionText}>
+                  <strong>Fazer 80+ pontos</strong>
+                  <span>Recompensa: +100 XP</span>
+                </div>
               </div>
             </div>
           </section>

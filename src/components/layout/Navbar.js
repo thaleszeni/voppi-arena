@@ -64,7 +64,14 @@ export default function Navbar() {
                     {user ? (
                         <div className={styles.userMenu}>
                             <div className={styles.userInfo}>
-                                <span className={styles.userName}>{profile?.full_name || 'Usuário'}</span>
+                                <div className={styles.nameRow}>
+                                    <span className={styles.userName}>{profile?.full_name || 'Usuário'}</span>
+                                    {profile?.current_streak > 0 && (
+                                        <span className={styles.streakBadge} title="Sua sequência diária">
+                                            🔥 {profile.current_streak}
+                                        </span>
+                                    )}
+                                </div>
                                 <span className={styles.userLevel}>
                                     N{profile?.level || 1} • {LEVEL_NAMES[profile?.level || 1]}
                                 </span>
