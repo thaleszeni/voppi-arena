@@ -161,9 +161,9 @@ REGRAS DE OURO:
 → Sua resposta DEVE reagir diretamente a isso. Não mude de assunto.
         `.trim();
 
-        const finalPrompt = `${systemPrompt}\n\n${'='.repeat(60)}\nHISTÓRICO DA CONVERSA:\n${'='.repeat(60)}\n${historyContext}\n\n${coherenceCheck}\n\nSua resposta (máx 2 frases):`;
+        const finalPrompt = `${systemPrompt}\n\n${'='.repeat(60)}\nHISTÓRICO DA CONVERSA:\n${'='.repeat(60)}\n${historyContext}\n\n${coherenceCheck}\n\nSua resposta (fale naturalmente, como um humano, respeitando o limite de 2 frases):`;
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
+        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -173,10 +173,10 @@ REGRAS DE OURO:
                     parts: [{ text: finalPrompt }]
                 }],
                 generationConfig: {
-                    temperature: 0.8,  // Um pouco de variabilidade natural
+                    temperature: 0.7,
                     topP: 0.95,
                     topK: 40,
-                    maxOutputTokens: 150  // Forçar respostas curtas
+                    maxOutputTokens: 250  // Aumentado para garantir que não corte
                 }
             })
         });
