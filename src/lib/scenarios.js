@@ -800,7 +800,6 @@ export const SCENARIOS_DATA = {
     },
 };
 
-export { generateScenario };
 
 export function getScenario(id) {
     if (SCENARIOS_DATA[id]) {
