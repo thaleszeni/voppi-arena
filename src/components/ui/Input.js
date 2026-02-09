@@ -15,7 +15,7 @@ export default function Input({
     return (
         <div className={`${styles.inputWrapper} ${className}`}>
             {label && (
-                <label className={styles.label}>
+                <label className={styles.label} htmlFor={props.id}>
                     {label}
                     {required && <span className={styles.required}>*</span>}
                 </label>
@@ -45,7 +45,7 @@ export function Textarea({
     return (
         <div className={`${styles.inputWrapper} ${className}`}>
             {label && (
-                <label className={styles.label}>
+                <label className={styles.label} htmlFor={props.id}>
                     {label}
                     {required && <span className={styles.required}>*</span>}
                 </label>
@@ -73,7 +73,7 @@ export function Select({
     return (
         <div className={`${styles.inputWrapper} ${className}`}>
             {label && (
-                <label className={styles.label}>
+                <label className={styles.label} htmlFor={props.id}>
                     {label}
                     {required && <span className={styles.required}>*</span>}
                 </label>

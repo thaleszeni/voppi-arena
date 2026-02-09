@@ -100,6 +100,8 @@ export default function LoginPage() {
                     <form onSubmit={handleSubmit} className={styles.loginForm}>
                         {!isLogin && (
                             <Input
+                                id="fullName"
+                                name="fullName"
                                 label="Nome completo"
                                 type="text"
                                 placeholder="Seu nome"
@@ -110,6 +112,8 @@ export default function LoginPage() {
                         )}
 
                         <Input
+                            id="email"
+                            name="email"
                             label="Email"
                             type="email"
                             placeholder="seu@email.com"
@@ -119,6 +123,8 @@ export default function LoginPage() {
                         />
 
                         <Input
+                            id="password"
+                            name="password"
                             label="Senha"
                             type="password"
                             placeholder="••••••••"
