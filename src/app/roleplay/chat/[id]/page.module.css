@@ -20,6 +20,12 @@
     font-size: var(--font-size-lg);
 }
 
+.headerActions {
+    display: flex;
+    gap: var(--space-3);
+    align-items: center;
+}
+
 .messagesList {
     flex: 1;
     overflow-y: auto;

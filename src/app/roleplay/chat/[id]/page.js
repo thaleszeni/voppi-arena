@@ -8,10 +8,12 @@ import { getScenario } from '@/lib/scenarios';
 import { supabase } from '@/lib/supabase';
 import { getAIResponse, evaluateRoleplay } from '@/lib/aiRoleplay';
 import { REWARDS, getXPForLevel } from '@/lib/gameConfig';
+import { getEnrichedProfile } from '@/lib/personaProfiles';
 import VoppiButton from '@/components/ui/Button';
 import Card, { CardContent } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Progress from '@/components/ui/Progress';
+import LeadProfilePanel from '@/components/roleplay/LeadProfilePanel';
 import styles from './page.module.css';
 
 export default function AIChatRoleplayPage() {
@@ -20,6 +22,8 @@ export default function AIChatRoleplayPage() {
     const params = useParams();
 
     const [scenario, setScenario] = useState(null);
+    const [enrichedProfile, setEnrichedProfile] = useState(null);
+    const [showProfile, setShowProfile] = useState(false);
     const [fetchingScenario, setFetchingScenario] = useState(true);
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState('');
@@ -52,6 +56,14 @@ export default function AIChatRoleplayPage() {
 
                 if (foundScenario) {
                     setScenario(foundScenario);
+
+                    // Load enriched profile if available
+                    if (foundScenario.enrichedProfileId) {
+                        const profile = getEnrichedProfile(foundScenario.enrichedProfileId);
+                        setEnrichedProfile(profile);
+                        setShowProfile(true); // Auto-show profile initially
+                    }
+
                     // Initial message from lead
                     setMessages([
                         { role: 'assistant', content: "[Sons de fundo] Alô, pois não? Quem fala?" }
@@ -194,7 +206,18 @@ export default function AIChatRoleplayPage() {
                     <h2>AI Roleplay: {scenario.title}</h2>
                     <Badge variant="secondary">Modo Conversa Livre</Badge>
                 </div>
-                <VoppiButton variant="outline" size="sm" onClick={handleFinish}>Encerrar e Avaliar</VoppiButton>
+                <div className={styles.headerActions}>
+                    {enrichedProfile && (
+                        <VoppiButton
+                            variant="outline"
+                            size="sm"
+                            onClick={() => setShowProfile(!showProfile)}
+                        >
+                            {showProfile ? '✕ Ocultar Perfil' : '📋 Ver Perfil do Lead'}
+                        </VoppiButton>
+                    )}
+                    <VoppiButton variant="outline" size="sm" onClick={handleFinish}>Encerrar e Avaliar</VoppiButton>
+                </div>
             </div>
 
             <div className={styles.messagesList} ref={scrollRef}>
@@ -221,6 +244,13 @@ export default function AIChatRoleplayPage() {
                 />
                 <VoppiButton onClick={handleSend} disabled={isThinking}>Enviar</VoppiButton>
             </div>
+
+            {/* Lead Profile Panel */}
+            <LeadProfilePanel
+                profile={enrichedProfile}
+                isVisible={showProfile}
+                onClose={() => setShowProfile(false)}
+            />
         </div>
     );
 }
