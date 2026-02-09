@@ -8,7 +8,7 @@ import { getScenario } from '@/lib/scenarios';
 import { supabase } from '@/lib/supabase';
 import { getAIResponse, evaluateRoleplay } from '@/lib/aiRoleplay';
 import { REWARDS, getXPForLevel } from '@/lib/gameConfig';
-import Button from '@/components/ui/Button';
+import VoppiButton from '@/components/ui/Button';
 import Card, { CardContent } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Progress from '@/components/ui/Progress';
@@ -171,7 +171,7 @@ export default function AIChatRoleplayPage() {
 
                     <div className={styles.resultsActions}>
                         <Link href="/roleplay">
-                            <Button variant="primary">Voltar para Arena</Button>
+                            <VoppiButton variant="primary">Voltar para Arena</VoppiButton>
                         </Link>
                     </div>
                 </div>
@@ -194,7 +194,7 @@ export default function AIChatRoleplayPage() {
                     <h2>AI Roleplay: {scenario.title}</h2>
                     <Badge variant="secondary">Modo Conversa Livre</Badge>
                 </div>
-                <Button variant="outline" size="sm" onClick={handleFinish}>Encerrar e Avaliar</Button>
+                <VoppiButton variant="outline" size="sm" onClick={handleFinish}>Encerrar e Avaliar</VoppiButton>
             </div>
 
             <div className={styles.messagesList} ref={scrollRef}>
@@ -219,7 +219,7 @@ export default function AIChatRoleplayPage() {
                         }
                     }}
                 />
-                <Button onClick={handleSend} disabled={isThinking}>Enviar</Button>
+                <VoppiButton onClick={handleSend} disabled={isThinking}>Enviar</VoppiButton>
             </div>
         </div>
     );

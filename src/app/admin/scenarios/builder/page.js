@@ -8,7 +8,7 @@ import { generateScenarioStructure } from '@/lib/aiGenerator';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import Card, { CardHeader, CardTitle, CardContent } from '@/components/ui/Card';
-import Button from '@/components/ui/Button';
+import VoppiButton from '@/components/ui/Button';
 import Input from '@/components/ui/Input';
 import Badge from '@/components/ui/Badge';
 import styles from './page.module.css';
@@ -156,13 +156,13 @@ export default function ScenarioBuilderPage() {
                                     <span>{step.title}</span>
                                 </div>
                             ))}
-                            <Button
+                            <VoppiButton
                                 variant="outline"
                                 style={{ marginLeft: '1rem', borderColor: '#8b5cf6', color: '#8b5cf6' }}
                                 onClick={() => setShowMagicModal(true)}
                             >
                                 ✨ Magic Fill
-                            </Button>
+                            </VoppiButton>
                         </div>
                     </div>
 
@@ -284,7 +284,7 @@ export default function ScenarioBuilderPage() {
                                                     <span className={styles.nodeId}>#{node.id}</span>
                                                 </div>
                                                 {node.id !== 'start' && (
-                                                    <Button
+                                                    <VoppiButton
                                                         variant="danger"
                                                         size="sm"
                                                         onClick={() => {
@@ -292,7 +292,7 @@ export default function ScenarioBuilderPage() {
                                                         }}
                                                     >
                                                         🗑️
-                                                    </Button>
+                                                    </VoppiButton>
                                                 )}
                                             </CardHeader>
                                             <CardContent>
@@ -353,10 +353,10 @@ export default function ScenarioBuilderPage() {
                                                                     }}
                                                                 >
                                                                     X
-                                                                </Button>
+                                                                </VoppiButton>
                                                             </div>
                                                         ))}
-                                                        <Button
+                                                        <VoppiButton
                                                             variant="outline"
                                                             size="sm"
                                                             onClick={() => {
@@ -367,7 +367,7 @@ export default function ScenarioBuilderPage() {
                                                             }}
                                                         >
                                                             + Adicionar Opção
-                                                        </Button>
+                                                        </VoppiButton>
                                                     </div>
                                                 )}
                                             </CardContent>
@@ -376,7 +376,7 @@ export default function ScenarioBuilderPage() {
                                 </div>
 
                                 <div className={styles.editorSidebar}>
-                                    <Button
+                                    <VoppiButton
                                         variant="primary"
                                         fullWidth
                                         onClick={() => {
@@ -390,7 +390,7 @@ export default function ScenarioBuilderPage() {
                                         }}
                                     >
                                         + Novo Nó (NPC)
-                                    </Button>
+                                    </VoppiButton>
                                 </div>
                             </div>
                         )}
@@ -422,21 +422,21 @@ export default function ScenarioBuilderPage() {
                         )}
 
                         <div className={styles.actions}>
-                            <Button
+                            <VoppiButton
                                 variant="outline"
                                 onClick={handleBack}
                                 disabled={currentStep === 1}
                             >
                                 Voltar
-                            </Button>
+                            </VoppiButton>
                             {currentStep < 4 ? (
-                                <Button variant="primary" onClick={handleNext}>
+                                <VoppiButton variant="primary" onClick={handleNext}>
                                     Próximo
-                                </Button>
+                                </VoppiButton>
                             ) : (
-                                <Button variant="success" onClick={handleSave}>
+                                <VoppiButton variant="success" onClick={handleSave}>
                                     Salvar Cenário
-                                </Button>
+                                </VoppiButton>
                             )}
                         </div>
                     </div>
@@ -455,10 +455,10 @@ export default function ScenarioBuilderPage() {
                                     rows={4}
                                 />
                                 <div className={styles.modalActions}>
-                                    <Button variant="outline" onClick={() => setShowMagicModal(false)} disabled={isGenerating}>Cancelar</Button>
-                                    <Button variant="primary" onClick={handleMagicFill} disabled={isGenerating || !magicTopic}>
+                                    <VoppiButton variant="outline" onClick={() => setShowMagicModal(false)} disabled={isGenerating}>Cancelar</VoppiButton>
+                                    <VoppiButton variant="primary" onClick={handleMagicFill} disabled={isGenerating || !magicTopic}>
                                         {isGenerating ? 'Gerando...' : 'Gerar Cenário'}
-                                    </Button>
+                                    </VoppiButton>
                                 </div>
                             </div>
                         </div>

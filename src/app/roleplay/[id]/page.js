@@ -8,7 +8,7 @@ import { getScenario, generateScenario } from '@/lib/scenarios';
 import { supabase } from '@/lib/supabase';
 import { MILESTONES, REWARDS, LEAD_TYPES, DIFFICULTY_RULES, getXPForLevel } from '@/lib/gameConfig';
 import { calculateStreak } from '@/lib/missions';
-import Button from '@/components/ui/Button';
+import VoppiButton from '@/components/ui/Button';
 import Card, { CardContent } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Progress from '@/components/ui/Progress';
@@ -301,7 +301,7 @@ export default function RoleplayPlayerPage() {
             <div className={styles.errorContainer}>
                 <p>Cenário não encontrado</p>
                 <Link href="/roleplay">
-                    <Button>Voltar para Arena</Button>
+                    <VoppiButton>Voltar para Arena</VoppiButton>
                 </Link>
             </div>
         );
@@ -384,14 +384,14 @@ export default function RoleplayPlayerPage() {
 
                     <div className={styles.resultsActions}>
                         <Link href={`/roleplay/${params.id}`}>
-                            <Button variant="outline" onClick={() => window.location.reload()}>
+                            <VoppiButton variant="outline" onClick={() => window.location.reload()}>
                                 🔄 Tentar Novamente
-                            </Button>
+                            </VoppiButton>
                         </Link>
                         <Link href="/roleplay">
-                            <Button variant="primary">
+                            <VoppiButton variant="primary">
                                 ← Voltar para Arena
-                            </Button>
+                            </VoppiButton>
                         </Link>
                     </div>
 
@@ -530,9 +530,9 @@ export default function RoleplayPlayerPage() {
                                             </Badge>
                                         ))}
                                     </div>
-                                    <Button variant="primary" fullWidth onClick={handleContinue}>
+                                    <VoppiButton variant="primary" fullWidth onClick={handleContinue}>
                                         Continuar →
-                                    </Button>
+                                    </VoppiButton>
                                 </CardContent>
                             </Card>
                         </div>
@@ -568,14 +568,14 @@ export default function RoleplayPlayerPage() {
                                     disabled={isEvaluating}
                                 />
                                 <div className={styles.freeActions}>
-                                    <Button
+                                    <VoppiButton
                                         variant="primary"
                                         disabled={!userInput.trim() || isEvaluating}
                                         onClick={handleFreeModeSubmit}
                                         fullWidth
                                     >
                                         {isEvaluating ? 'Avaliando...' : 'Enviar Resposta'}
-                                    </Button>
+                                    </VoppiButton>
                                     <p className={styles.freeHint}>Foque em: Ser direto e contornar a dor do lead.</p>
                                 </div>
                             </div>
@@ -586,9 +586,9 @@ export default function RoleplayPlayerPage() {
                 {/* Auto-advance for dialogue nodes */}
                 {currentNode?.type === 'dialogue' && !showFeedback && currentNode?.nextNodeId && (
                     <div className={styles.continueContainer}>
-                        <Button variant="primary" onClick={handleAutoAdvance}>
+                        <VoppiButton variant="primary" onClick={handleAutoAdvance}>
                             Continuar →
-                        </Button>
+                        </VoppiButton>
                     </div>
                 )}
             </div>

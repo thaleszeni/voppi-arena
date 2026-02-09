@@ -9,7 +9,7 @@ import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
 import Card, { CardContent } from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
-import Button from '@/components/ui/Button';
+import VoppiButton from '@/components/ui/Button';
 import styles from './page.module.css';
 
 const INITIAL_SCENARIOS = [
@@ -231,10 +231,10 @@ export default function RoleplayListPage() {
                                     {!scenario.isLocked && (
                                         <div className={styles.scenarioActions}>
                                             <Link href={`/roleplay/${scenario.id}`} className={styles.actionBtn}>
-                                                <Button variant="outline" size="sm" fullWidth>Guided</Button>
+                                                <VoppiButton variant="outline" size="sm" fullWidth>Guided</VoppiButton>
                                             </Link>
                                             <Link href={`/roleplay/chat/${scenario.id}`} className={styles.actionBtn}>
-                                                <Button variant="primary" size="sm" fullWidth>Chat IA</Button>
+                                                <VoppiButton variant="primary" size="sm" fullWidth>Chat IA</VoppiButton>
                                             </Link>
                                         </div>
                                     )}
