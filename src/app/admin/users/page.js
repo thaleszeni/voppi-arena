@@ -127,7 +127,7 @@ export default function AdminUsersPage() {
                 <main className={styles.mainContent}>
                     <div className={styles.pageHeader}>
                         <div>
-                            <h1 className={styles.pageTitle}>👥 Gerenciar Usuários</h1>
+                            <h1 className={styles.pageTitle}>👥 Gerenciar Usuários (v2.1)</h1>
                             <p className={styles.pageDescription}>
                                 Visualize e gerencie as permissões dos comerciais.
                             </p>
