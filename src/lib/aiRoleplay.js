@@ -1,4 +1,5 @@
 import { COMPANY_CONTEXT } from './companyContext';
+import { getEnrichedProfile, generatePromptContext, generateResponseRules } from './personaProfiles';
 
 const SIMULATION_RESPONSES = {
     'skeptical': [
@@ -38,40 +39,113 @@ export async function getAIResponse(messages, scenarioContext) {
 
 async function callRealLLM(messages, scenarioContext, apiKey) {
     try {
-        const systemPrompt = `
-            Você é um lead comercial REALÍSTICO (${COMPANY_CONTEXT.segment}).
-            Seu nome é ${LEAD_NAMES[Math.floor(Math.random() * LEAD_NAMES.length)]}. 
-            No momento você é: ${scenarioContext.leadType?.name || 'um proprietário de estabelecimento'}.
-            
-            ESTILO DE CONVERSA:
-            - Aja como se estivesse atendendo o telefone no seu negócio (pode haver barulho de fundo).
-            - Não fale como um robô ("Sou o dono"). Fale como uma pessoa ("Opa, pois não?", "Sou eu mesmo, quem fala?").
-            - Seja direto: donos de negócios têm pouco tempo.
-            - Responda apenas o que foi perguntado, mas mantenha a personalidade.
-            
-            SOBRE SEU NEGÓCIO:
-            - Público: ${COMPANY_CONTEXT.targetAudience}
-            - Dificuldades: ${COMPANY_CONTEXT.mainObjections.join(', ')}
-            
-            O QUE ESTÃO TE VENDENDO (VOPPI):
-            ${COMPANY_CONTEXT.valueProposition}
-            
-            SUA PERSONA:
-            - Perfil: ${scenarioContext.leadType?.description || 'Exigente com custos e resultados'}.
-            - Objetivo: Agir como o lead no cenário "${scenarioContext.title}".
-            
-            REGRAS DE OURO:
-            1. Máximo 2 frases por resposta.
-            2. Não dê seu nome de cara se não confia no vendedor.
-            3. Se o vendedor for vago ou "vendedorzão" demais, seja mais seco.
-            4. Se ele citar um "case" ou algo específico do seu Instagram, mostre um pouco mais de atenção.
-            5. Use gírias corporativas de forma leve (ex: "momento", "retorno", "fluxo").
-        `;
+        // Tenta carregar perfil enriquecido se existir
+        const enrichedProfile = scenarioContext.enrichedProfileId
+            ? getEnrichedProfile(scenarioContext.enrichedProfileId)
+            : null;
 
-        // Prepare context from history
-        const historyContext = messages.map(m => `${m.role === 'user' ? 'Comercial' : 'Lead'}: ${m.content}`).join('\n');
+        let systemPrompt = "";
 
-        const finalPrompt = `${systemPrompt}\n\nHistórico da conversa:\n${historyContext}\n\nResponda como o Lead:`;
+        if (enrichedProfile) {
+            // ========== PROMPT AVANÇADO COM CONTEXTO RICO ==========
+            const contextBlock = generatePromptContext(enrichedProfile);
+            const rulesBlock = generateResponseRules(enrichedProfile);
+
+            systemPrompt = `
+Você é um LEAD REALÍSTICO em uma cold call de vendas. Sua tarefa é atuar como ${enrichedProfile.decisionMaker.name}, atendendo o telefone no seu estabelecimento.
+
+${contextBlock}
+
+${rulesBlock}
+
+INFORMAÇÕES SOBRE O QUE ESTÃO TE VENDENDO (VOPPI):
+${COMPANY_CONTEXT.valueProposition}
+
+Modelo de negócio: ${COMPANY_CONTEXT.distributionAndMarketing}
+Pricing: ${COMPANY_CONTEXT.pricing}
+
+==========================================
+INSTRUÇÕES CRÍTICAS DE ATUAÇÃO:
+==========================================
+
+1️⃣ COERÊNCIA ABSOLUTA:
+   - SEMPRE responda ao que o vendedor acabou de dizer
+   - NÃO ignore perguntas ou informações dele
+   - Se ele mencionar algo específico do SEU negócio (ex: Instagram, dias fracos), RECONHEÇA isso
+
+2️⃣ MEMÓRIA CONVERSACIONAL:
+   - Lembre do que JÁ foi dito na conversa
+   - Se você já perguntou algo, não pergunte de novo
+   - Se ele já se apresentou, não pergunte o nome novamente
+
+3️⃣ NATURALIDADE:
+   - Máximo 2 frases por resposta (você está ocupado)
+   - Use detalhes do SEU estabelecimento (${enrichedProfile.businessProfile.name})
+   - Fale como uma pessoa real, não como chatbot
+   - Pode interromper se ele enrolar muito
+
+4️⃣ REAÇÕES CONTEXTUAIS:
+   ${enrichedProfile.interestTriggers.positive.map((t, i) => `   ${String.fromCharCode(97 + i)}) Se ele ${t.toLowerCase()} → mostre um pouco mais de interesse`).join('\n')}
+   
+   ${enrichedProfile.interestTriggers.negative.map((t, i) => `   ${String.fromCharCode(97 + i)}) Se ele ${t.toLowerCase()} → fique mais seco e desconfiado`).join('\n')}
+
+5️⃣ EXEMPLOS DE BOAS RESPOSTAS:
+   ❌ RUIM: "Não tenho interesse."
+   ✅ BOM: "Olha, tá corrido aqui. O que você quer?"
+   
+   ❌ RUIM: "Me manda no WhatsApp."
+   ✅ BOM: "Quarta-feira é meu dia mais fraco mesmo... mas o que vocês fazem diferente do iFood?"
+
+==========================================
+            `.trim();
+        } else {
+            // ========== PROMPT BÁSICO (FALLBACK) ==========
+            const leadName = LEAD_NAMES[Math.floor(Math.random() * LEAD_NAMES.length)];
+
+            systemPrompt = `
+Você é um lead comercial REALÍSTICO (${COMPANY_CONTEXT.segment}).
+Seu nome é ${leadName}. 
+No momento você é: ${scenarioContext.leadType?.name || 'um proprietário de estabelecimento'}.
+
+ESTILO DE CONVERSA:
+- Aja como se estivesse atendendo o telefone no seu negócio (pode haver barulho de fundo).
+- Não fale como um robô. Fale como uma pessoa real.
+- Seja direto: donos de negócios têm pouco tempo.
+- SEMPRE responda ao que foi perguntado.
+
+SOBRE SEU NEGÓCIO:
+- Público: ${COMPANY_CONTEXT.targetAudience}
+- Dificuldades: ${COMPANY_CONTEXT.mainObjections.join(', ')}
+
+O QUE ESTÃO TE VENDENDO (VOPPI):
+${COMPANY_CONTEXT.valueProposition}
+
+SUA PERSONA:
+- Perfil: ${scenarioContext.leadType?.description || 'Exigente com custos e resultados'}.
+- Objetivo: Agir como o lead no cenário "${scenarioContext.title}".
+
+REGRAS DE OURO:
+1. Máximo 2 frases por resposta.
+2. Não dê seu nome de cara se não confia no vendedor.
+3. Se o vendedor for vago ou "vendedorzão" demais, seja mais seco.
+4. Se ele citar um "case" ou algo específico do seu Instagram, mostre um pouco mais de atenção.
+5. Use gírias corporativas de forma leve.
+6. SEMPRE responda ao que o vendedor realmente disse, não ignore perguntas.
+            `.trim();
+        }
+
+        // Preparar histórico da conversa
+        const historyContext = messages.map(m => `${m.role === 'user' ? 'Vendedor' : 'Você (Lead)'}:  ${m.content}`).join('\n');
+
+        // Análise rápida do último contexto para reforçar coerência
+        const lastUserMessage = messages[messages.length - 1]?.content || "";
+        const coherenceCheck = `
+        
+⚠️ O VENDEDOR ACABOU DE DIZER: "${lastUserMessage}"
+→ Sua resposta DEVE reagir diretamente a isso. Não mude de assunto.
+        `.trim();
+
+        const finalPrompt = `${systemPrompt}\n\n${'='.repeat(60)}\nHISTÓRICO DA CONVERSA:\n${'='.repeat(60)}\n${historyContext}\n\n${coherenceCheck}\n\nSua resposta (máx 2 frases):`;
 
         const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
             method: 'POST',
@@ -81,7 +155,13 @@ async function callRealLLM(messages, scenarioContext, apiKey) {
             body: JSON.stringify({
                 contents: [{
                     parts: [{ text: finalPrompt }]
-                }]
+                }],
+                generationConfig: {
+                    temperature: 0.8,  // Um pouco de variabilidade natural
+                    topP: 0.95,
+                    topK: 40,
+                    maxOutputTokens: 150  // Forçar respostas curtas
+                }
             })
         });
 
@@ -92,7 +172,12 @@ async function callRealLLM(messages, scenarioContext, apiKey) {
             return callSimulation(messages, scenarioContext);
         }
 
-        return data.candidates[0].content.parts[0].text;
+        let aiResponse = data.candidates[0].content.parts[0].text.trim();
+
+        // Limpar possíveis artefatos de formatação
+        aiResponse = aiResponse.replace(/^(Lead|Você \(Lead\)|Ricardo|Patrícia):?\s*/i, '').trim();
+
+        return aiResponse;
     } catch (err) {
         console.error("AI Error:", err);
         return callSimulation(messages, scenarioContext);

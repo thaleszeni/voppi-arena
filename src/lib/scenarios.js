@@ -408,6 +408,7 @@ export const SCENARIOS_DATA = {
         category: 'restaurant_gatekeeper',
         difficulty: 2,
         minLevel: 1,
+        enrichedProfileId: 'restaurante-italiano-floripa',  // 🎯 PERFIL RICO CONECTADO
         startNodeId: 'node-1',
         nodes: {
             'node-1': {
