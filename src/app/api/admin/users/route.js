@@ -37,6 +37,7 @@ export async function POST(req) {
         }
 
         // 2. Verificar se é admin mesmo (não confie no frontend)
+        const supabaseAdmin = getSupabaseAdmin();
         const { data: profile } = await supabaseAdmin
             .from('profiles')
             .select('role')
