@@ -30,44 +30,37 @@ const LEAD_NAMES = ["Ricardo", "Patrícia", "Sérgio", "Márcia", "Fernando", "C
 export async function getAIResponse(messages, scenarioContext) {
     const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
-    console.log('[AI Mode Check] API Key present:', !!apiKey);
-
     if (apiKey) {
         try {
-            const response = await callRealLLM(messages, scenarioContext, apiKey);
-            return response;
+            return await callRealLLM(messages, scenarioContext, apiKey);
         } catch (error) {
-            console.error('[AI Mode Check] callRealLLM failed, falling back to simulation:', error);
+            console.error('AI Error (Fallback to simulation):', error);
             return callSimulation(messages, scenarioContext);
         }
     } else {
-        console.warn('[AI Mode Check] No API Key found, using simulation mode.');
         return callSimulation(messages, scenarioContext);
     }
 }
 
 async function callRealLLM(messages, scenarioContext, apiKey) {
     try {
-        // 🔍 DEBUG: Log para verificar se enrichedProfileId está chegando
-        console.log('[AI Debug] Scenario context:', {
-            title: scenarioContext.title,
-            enrichedProfileId: scenarioContext.enrichedProfileId,
-            hasProfile: !!scenarioContext.enrichedProfileId
-        });
+        const leadProfile = scenarioContext.enrichedProfileId ? getEnrichedProfile(scenarioContext.enrichedProfileId) : null;
+        hasProfile: !!scenarioContext.enrichedProfileId
+    });
 
-        // Tenta carregar perfil enriquecido se existir
-        const enrichedProfile = scenarioContext.enrichedProfileId
-            ? getEnrichedProfile(scenarioContext.enrichedProfileId)
-            : null;
+    // Tenta carregar perfil enriquecido se existir
+    const enrichedProfile = scenarioContext.enrichedProfileId
+        ? getEnrichedProfile(scenarioContext.enrichedProfileId)
+        : null;
 
-        let systemPrompt = "";
+    let systemPrompt = "";
 
-        if (enrichedProfile) {
-            // ========== PROMPT AVANÇADO COM CONTEXTO RICO ==========
-            const contextBlock = generatePromptContext(enrichedProfile);
-            const rulesBlock = generateResponseRules(enrichedProfile);
+    if (enrichedProfile) {
+        // ========== PROMPT AVANÇADO COM CONTEXTO RICO ==========
+        const contextBlock = generatePromptContext(enrichedProfile);
+        const rulesBlock = generateResponseRules(enrichedProfile);
 
-            systemPrompt = `
+        systemPrompt = `
 Você é um LEAD REALÍSTICO em uma cold call de vendas. Sua tarefa é atuar como ${enrichedProfile.decisionMaker.name}, atendendo o telefone no seu estabelecimento.
 
 ${contextBlock}
@@ -114,11 +107,11 @@ INSTRUÇÕES CRÍTICAS DE ATUAÇÃO:
 
 ==========================================
             `.trim();
-        } else {
-            // ========== PROMPT BÁSICO (FALLBACK) ==========
-            const leadName = LEAD_NAMES[Math.floor(Math.random() * LEAD_NAMES.length)];
+    } else {
+        // ========== PROMPT BÁSICO (FALLBACK) ==========
+        const leadName = LEAD_NAMES[Math.floor(Math.random() * LEAD_NAMES.length)];
 
-            systemPrompt = `
+        systemPrompt = `
 Você é um lead comercial REALÍSTICO (${COMPANY_CONTEXT.segment}).
 Seu nome é ${leadName}. 
 No momento você é: ${scenarioContext.leadType?.name || 'um proprietário de estabelecimento'}.
@@ -148,61 +141,59 @@ REGRAS DE OURO:
 5. Use gírias corporativas de forma leve.
 6. SEMPRE responda ao que o vendedor realmente disse, não ignore perguntas.
             `.trim();
-        }
+    }
 
-        // Preparar histórico da conversa
-        const historyContext = messages.map(m => `${m.role === 'user' ? 'Vendedor' : 'Você (Lead)'}:  ${m.content}`).join('\n');
+    // Preparar histórico da conversa
+    const historyContext = messages.map(m => `${m.role === 'user' ? 'Vendedor' : 'Você (Lead)'}:  ${m.content}`).join('\n');
 
-        // Análise rápida do último contexto para reforçar coerência
-        const lastUserMessage = messages[messages.length - 1]?.content || "";
-        const coherenceCheck = `
+    // Análise rápida do último contexto para reforçar coerência
+    const lastUserMessage = messages[messages.length - 1]?.content || "";
+    const coherenceCheck = `
         
 ⚠️ O VENDEDOR ACABOU DE DIZER: "${lastUserMessage}"
 → Sua resposta DEVE reagir diretamente a isso. Não mude de assunto.
         `.trim();
 
-        const finalPrompt = `${systemPrompt}\n\n${'='.repeat(60)}\nHISTÓRICO DA CONVERSA:\n${'='.repeat(60)}\n${historyContext}\n\n${coherenceCheck}\n\nSua resposta (fale naturalmente, como um humano, respeitando o limite de 2 frases):`;
+    const finalPrompt = `${systemPrompt}\n\n${'='.repeat(60)}\nHISTÓRICO DA CONVERSA:\n${'='.repeat(60)}\n${historyContext}\n\n${coherenceCheck}\n\nSua resposta (fale naturalmente, como um humano, respeitando o limite de 2 frases):`;
 
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                contents: [{
-                    parts: [{ text: finalPrompt }]
-                }],
-                generationConfig: {
-                    temperature: 0.7,
-                    topP: 0.95,
-                    topK: 40,
-                    maxOutputTokens: 250  // Aumentado para garantir que não corte
-                }
-            })
-        });
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+            contents: [{
+                parts: [{ text: finalPrompt }]
+            }],
+            generationConfig: {
+                temperature: 0.7,
+                topP: 0.95,
+                topK: 40,
+                maxOutputTokens: 250  // Aumentado para garantir que não corte
+            }
+        })
+    });
 
-        const data = await response.json();
+    const data = await response.json();
 
-        if (data.error) {
-            console.error("Gemini API Error Detail:", JSON.stringify(data.error, null, 2));
-            throw new Error(`Gemini API Error: ${data.error.message}`);
-        }
-
-        if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-            console.error("Gemini Unexpected Response Format:", JSON.stringify(data, null, 2));
-            throw new Error("Resposta da IA em formato inesperado.");
-        }
-
-        let aiResponse = data.candidates[0].content.parts[0].text.trim();
-
-        // Limpar possíveis artefatos de formatação
-        aiResponse = aiResponse.replace(/^(Lead|Você \(Lead\)|Ricardo|Patrícia):?\s*/i, '').trim();
-
-        return aiResponse;
-    } catch (err) {
-        console.error("AI Error:", err);
-        return callSimulation(messages, scenarioContext);
+    if (data.error) {
+        throw new Error(`Gemini API Error: ${data.error.message}`);
     }
+
+    if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+        throw new Error("Resposta da IA em formato inesperado.");
+    }
+
+    let aiResponse = data.candidates[0].content.parts[0].text.trim();
+
+    // Limpar possíveis artefatos de formatação
+    aiResponse = aiResponse.replace(/^(Lead|Você \(Lead\)|Ricardo|Patrícia):?\s*/i, '').trim();
+
+    return aiResponse;
+} catch (err) {
+    console.error("AI Error:", err);
+    return callSimulation(messages, scenarioContext);
+}
 }
 
 function callSimulation(messages, scenarioContext) {
