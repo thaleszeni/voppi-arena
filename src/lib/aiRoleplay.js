@@ -172,6 +172,10 @@ REGRAS DE OURO:
     const data = await response.json();
 
     if (data.error) {
+        if (data.error.code === 429) {
+            console.warn('⚠️ GEMINI API QUOTA EXHAUSTED: A IA está temporariamente indisponível (limite de uso atingido).');
+            throw new Error("COTA_EXCEDIDA");
+        }
         throw new Error(`Gemini API Error: ${data.error.message}`);
     }
 
@@ -267,7 +271,7 @@ export async function evaluateRoleplay(history, scenarioContext) {
                 }
             `;
 
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent?key=${apiKey}`, {
+                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
