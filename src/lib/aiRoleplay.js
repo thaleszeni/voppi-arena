@@ -7,21 +7,43 @@ const SIMULATION_RESPONSES = {
         "Não estou convencido de que isso traga retorno real para o meu restaurante.",
         "Muitas taxas. Como eu sei que não vou perder dinheiro?",
         "Já uso outros apps e eles me dão muito trabalho.",
-        "O pessoal do Prime Gourmet já passou aqui e a conta não fechou."
+        "O pessoal do Prime Gourmet já passou aqui e a conta não fechou.",
+        "Não quero saber de promoção agora, estamos focados em qualidade.",
+        "Como vocês trazem gente pra cá se ninguém conhece a Voppi?",
+        "Já tive prejuízo com esses sites de cupom no passado.",
+        "Vocês cobram pra entrar? Porque se cobrar eu já nem quero ouvir.",
+        "Quero ver números. Quantos clientes vocês trazem por mês aqui na região?"
     ],
     'busy': [
         "Estou no meio do serviço agora, pode ser rápido?",
         "Temos muito movimento hoje. O que você quer exatamente?",
         "Não tenho tempo para apresentações longas.",
         "Se for para vender anúncio, eu não quero.",
-        "Estou com a cozinha cheia, me liga em outra hora?"
+        "Estou com a cozinha cheia, me liga em outra hora?",
+        "Fala rápido que os pedidos estão saindo.",
+        "Pode me mandar um WhatsApp? Agora é o pior horário.",
+        "Quem te deu meu número? Estamos bem ocupados.",
+        "Olha, se não for urgente eu vou ter que desligar.",
+        "Resume em 30 segundos o que você faz."
     ],
     'innovator': [
         "Interessante... como funciona a integração com meu sistema?",
         "Estou buscando novas formas de atrair público jovem.",
         "Vocês trabalham com algum tipo de automação?",
         "Me conte mais sobre como a Voppi ajuda no meu marketing.",
-        "Vi algo parecido em São Paulo, vocês atendem essa região?"
+        "Vi algo parecido em São Paulo, vocês atendem essa região?",
+        "Adoro tecnologia, o que vocês têm de novo pro meu PDV?",
+        "Como funciona essa rede de creators que vocês mencionaram?",
+        "Dá pra medir exatamente de onde vem cada cliente?",
+        "Vocês fazem a produção das fotos e vídeos também?",
+        "Gostei da ideia de experiências, parece menos agressivo que desconto."
+    ],
+    'friendly': [
+        "Oi! Tudo bem? Me conte o que é essa Voppi.",
+        "Puxa, que legal que você ligou. Vi o Instagram de vocês outro dia.",
+        "Sempre bom conhecer parcerias novas. Como funcionaria aqui pro café?",
+        "Ah, eu adoro novidades! Vocês atendem aqui o bairro há muito tempo?",
+        "Pode falar, estou ouvindo. Me pareceu interessante esse modelo."
     ]
 };
 
@@ -30,19 +52,34 @@ const LEAD_NAMES = ["Ricardo", "Patrícia", "Sérgio", "Márcia", "Fernando", "C
 export async function getAIResponse(messages, scenarioContext) {
     const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
+    // Modelos para tentar em ordem de preferência (para fugir de falta de cota)
+    const models = [
+        'gemini-2.0-flash',
+        'gemini-1.5-flash-latest',
+        'gemini-1.5-flash-8b',
+        'gemini-pro-latest'
+    ];
+
     if (apiKey) {
-        try {
-            return await callRealLLM(messages, scenarioContext, apiKey);
-        } catch (error) {
-            console.error('AI Error (Fallback to simulation):', error);
-            return callSimulation(messages, scenarioContext);
+        for (const model of models) {
+            try {
+                return await callRealLLM(messages, scenarioContext, apiKey, model);
+            } catch (error) {
+                if (error.message === "COTA_EXCEDIDA") {
+                    console.warn(`Tentando próximo modelo por falta de cota em ${model}...`);
+                    continue; // Tenta o próximo modelo
+                }
+                console.error(`Erro no modelo ${model}:`, error);
+                break; // Erro grave, cai pro simulation
+            }
         }
-    } else {
-        return callSimulation(messages, scenarioContext);
     }
+
+    // Se nenhum modelo funcionou ou não tem API key
+    return callSimulation(messages, scenarioContext);
 }
 
-async function callRealLLM(messages, scenarioContext, apiKey) {
+async function callRealLLM(messages, scenarioContext, apiKey, modelName = 'gemini-2.0-flash') {
     // Tenta carregar perfil enriquecido se existir
     const enrichedProfile = scenarioContext.enrichedProfileId
         ? getEnrichedProfile(scenarioContext.enrichedProfileId)
@@ -151,7 +188,7 @@ REGRAS DE OURO:
 
     const finalPrompt = `${systemPrompt}\n\n${'='.repeat(60)}\nHISTÓRICO DA CONVERSA:\n${'='.repeat(60)}\n${historyContext}\n\n${coherenceCheck}\n\nSua resposta (fale naturalmente, como um humano, respeitando o limite de 2 frases):`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
+    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
