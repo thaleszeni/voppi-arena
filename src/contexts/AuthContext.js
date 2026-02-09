@@ -12,45 +12,68 @@ export function AuthProvider({ children }) {
 
     useEffect(() => {
         let subscription = null;
+        let isMounted = true;
 
         const initAuth = async () => {
             try {
                 // 1. Get initial session
                 const { data: { session } } = await supabase.auth.getSession();
+
+                if (!isMounted) return;
+
                 if (session?.user) {
                     setUser(session.user);
                     const userProfile = await getUserProfile(session.user.id);
-                    setProfile(userProfile);
+                    if (isMounted) setProfile(userProfile);
                 }
 
                 // 2. Listen for auth changes
                 const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(
                     async (event, session) => {
                         console.log('Auth event:', event);
+                        if (!isMounted) return;
+
                         if (session?.user) {
                             setUser(session.user);
                             const userProfile = await getUserProfile(session.user.id);
-                            setProfile(userProfile);
+                            if (isMounted) {
+                                setProfile(userProfile);
+                                setLoading(false);
+                            }
                         } else {
-                            setUser(null);
-                            setProfile(null);
+                            if (isMounted) {
+                                setUser(null);
+                                setProfile(null);
+                                setLoading(false);
+                            }
                         }
-                        setLoading(false);
                     }
                 );
                 subscription = sub;
             } catch (error) {
-                console.error('Fatal error in AuthProvider:', error);
+                // Silently handle AbortError as it is usually non-fatal cancellation
+                if (error.name === 'AbortError') {
+                    console.warn('Auth initialization was aborted (expected in Dev mode or on unmount)');
+                } else {
+                    console.error('Fatal error in AuthProvider:', error);
+                }
             } finally {
-                // Ensure we eventually stop loading
-                setTimeout(() => setLoading(false), 2000);
+                if (isMounted) {
+                    // Ensure we eventually stop loading
+                    setTimeout(() => {
+                        if (isMounted) setLoading(false);
+                    }, 1000);
+                }
             }
         };
 
         initAuth();
 
         return () => {
-            if (subscription) subscription.unsubscribe();
+            isMounted = false;
+            if (subscription) {
+                subscription.unsubscribe();
+            }
         };
     }, []);
 
