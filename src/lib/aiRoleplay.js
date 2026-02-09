@@ -43,11 +43,6 @@ export async function getAIResponse(messages, scenarioContext) {
 }
 
 async function callRealLLM(messages, scenarioContext, apiKey) {
-    try {
-        const leadProfile = scenarioContext.enrichedProfileId ? getEnrichedProfile(scenarioContext.enrichedProfileId) : null;
-        hasProfile: !!scenarioContext.enrichedProfileId
-    });
-
     // Tenta carregar perfil enriquecido se existir
     const enrichedProfile = scenarioContext.enrichedProfileId
         ? getEnrichedProfile(scenarioContext.enrichedProfileId)
@@ -190,10 +185,6 @@ REGRAS DE OURO:
     aiResponse = aiResponse.replace(/^(Lead|Você \(Lead\)|Ricardo|Patrícia):?\s*/i, '').trim();
 
     return aiResponse;
-} catch (err) {
-    console.error("AI Error:", err);
-    return callSimulation(messages, scenarioContext);
-}
 }
 
 function callSimulation(messages, scenarioContext) {
