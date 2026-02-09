@@ -1,5 +1,6 @@
 import { COMPANY_CONTEXT } from './companyContext';
 import { getEnrichedProfile, generatePromptContext, generateResponseRules } from './personaProfiles';
+import { sendChatRequest } from './llmProvider';
 
 const SIMULATION_RESPONSES = {
     'skeptical': [
@@ -50,36 +51,19 @@ const SIMULATION_RESPONSES = {
 const LEAD_NAMES = ["Ricardo", "Patrícia", "Sérgio", "Márcia", "Fernando", "Cláudia", "Roberto", "Silvana"];
 
 export async function getAIResponse(messages, scenarioContext) {
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-
-    // Modelos para tentar em ordem de preferência (para fugir de falta de cota)
-    const models = [
-        'gemini-2.0-flash',
-        'gemini-1.5-flash-latest',
-        'gemini-1.5-flash-8b',
-        'gemini-pro-latest'
-    ];
-
-    if (apiKey) {
-        for (const model of models) {
-            try {
-                return await callRealLLM(messages, scenarioContext, apiKey, model);
-            } catch (error) {
-                if (error.message === "COTA_EXCEDIDA") {
-                    console.warn(`Tentando próximo modelo por falta de cota em ${model}...`);
-                    continue; // Tenta o próximo modelo
-                }
-                console.error(`Erro no modelo ${model}:`, error);
-                break; // Erro grave, cai pro simulation
-            }
+    try {
+        return await callRealLLM(messages, scenarioContext);
+    } catch (error) {
+        if (error.message === 'GROQ_API_KEY_MISSING') {
+            console.warn('Groq API Key missing. Falling back to simulation.');
+        } else {
+            console.error('AI Error (Fallback to simulation):', error);
         }
+        return callSimulation(messages, scenarioContext);
     }
-
-    // Se nenhum modelo funcionou ou não tem API key
-    return callSimulation(messages, scenarioContext);
 }
 
-async function callRealLLM(messages, scenarioContext, apiKey, modelName = 'gemini-2.0-flash') {
+async function callRealLLM(messages, scenarioContext) {
     // Tenta carregar perfil enriquecido se existir
     const enrichedProfile = scenarioContext.enrichedProfileId
         ? getEnrichedProfile(scenarioContext.enrichedProfileId)
@@ -188,44 +172,18 @@ REGRAS DE OURO:
 
     const finalPrompt = `${systemPrompt}\n\n${'='.repeat(60)}\nHISTÓRICO DA CONVERSA:\n${'='.repeat(60)}\n${historyContext}\n\n${coherenceCheck}\n\nSua resposta (fale naturalmente, como um humano, respeitando o limite de 2 frases):`;
 
-    const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${modelName}:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-            contents: [{
-                parts: [{ text: finalPrompt }]
-            }],
-            generationConfig: {
-                temperature: 0.7,
-                topP: 0.95,
-                topK: 40,
-                maxOutputTokens: 250  // Aumentado para garantir que não corte
-            }
-        })
+    const groqMessages = messages.map(m => ({
+        role: m.role === 'user' ? 'user' : 'assistant',
+        content: m.content
+    }));
+
+    const result = await sendChatRequest({
+        systemPrompt: finalPrompt,
+        messages: groqMessages,
+        temperature: 0.7
     });
 
-    const data = await response.json();
-
-    if (data.error) {
-        if (data.error.code === 429) {
-            console.warn('⚠️ GEMINI API QUOTA EXHAUSTED: A IA está temporariamente indisponível (limite de uso atingido).');
-            throw new Error("COTA_EXCEDIDA");
-        }
-        throw new Error(`Gemini API Error: ${data.error.message}`);
-    }
-
-    if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
-        throw new Error("Resposta da IA em formato inesperado.");
-    }
-
-    let aiResponse = data.candidates[0].content.parts[0].text.trim();
-
-    // Limpar possíveis artefatos de formatação
-    aiResponse = aiResponse.replace(/^(Lead|Você \(Lead\)|Ricardo|Patrícia):?\s*/i, '').trim();
-
-    return aiResponse;
+    return result.text;
 }
 
 function callSimulation(messages, scenarioContext) {
@@ -261,7 +219,7 @@ function callSimulation(messages, scenarioContext) {
 }
 
 export async function evaluateRoleplay(history, scenarioContext) {
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    const apiKey = process.env.NEXT_PUBLIC_GROQ_API_KEY;
 
     // Default fallback structure
     const fallbackResult = {
@@ -308,27 +266,22 @@ export async function evaluateRoleplay(history, scenarioContext) {
                 }
             `;
 
-                const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${apiKey}`, {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                        contents: [{ parts: [{ text: prompt }] }]
-                    })
+                const result = await sendChatRequest({
+                    systemPrompt: prompt,
+                    messages: [], // Tudo está no prompt principal para avaliação
+                    temperature: 0.1 // Mais determinístico para avaliação
                 });
 
-                const data = await response.json();
-                const text = data.candidates[0].content.parts[0].text;
-
                 // Clean markdown if present
-                const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
-                const result = JSON.parse(jsonStr);
+                const jsonStr = result.text.replace(/```json/g, '').replace(/```/g, '').trim();
+                const jsonResult = JSON.parse(jsonStr);
 
                 // Calculate total XP based on avg score
-                const avg = Object.values(result.scores).reduce((a, b) => a + b, 0) / 5;
+                const avg = Object.values(jsonResult.scores).reduce((a, b) => a + b, 0) / 5;
 
                 return {
-                    scores: result.scores,
-                    feedback: result.feedback,
+                    scores: jsonResult.scores,
+                    feedback: jsonResult.feedback,
                     totalXP: Math.round(avg * 2.5) // Scale up slightly
                 };
 

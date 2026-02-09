@@ -11,69 +11,51 @@ export function AuthProvider({ children }) {
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
-        let subscription = null;
         let isMounted = true;
 
+        // 1. Get initial session immediately
         const initAuth = async () => {
             try {
-                // 1. Get initial session
                 const { data: { session } } = await supabase.auth.getSession();
 
-                if (!isMounted) return;
-
-                if (session?.user) {
+                if (isMounted && session?.user) {
                     setUser(session.user);
                     const userProfile = await getUserProfile(session.user.id);
                     if (isMounted) setProfile(userProfile);
                 }
-
-                // 2. Listen for auth changes
-                const { data: { subscription: sub } } = supabase.auth.onAuthStateChange(
-                    async (event, session) => {
-                        console.log('Auth event:', event);
-                        if (!isMounted) return;
-
-                        if (session?.user) {
-                            setUser(session.user);
-                            const userProfile = await getUserProfile(session.user.id);
-                            if (isMounted) {
-                                setProfile(userProfile);
-                                setLoading(false);
-                            }
-                        } else {
-                            if (isMounted) {
-                                setUser(null);
-                                setProfile(null);
-                                setLoading(false);
-                            }
-                        }
-                    }
-                );
-                subscription = sub;
             } catch (error) {
-                // Silently handle AbortError as it is usually non-fatal cancellation
-                if (error.name === 'AbortError') {
-                    console.warn('Auth initialization was aborted (expected in Dev mode or on unmount)');
-                } else {
-                    console.error('Fatal error in AuthProvider:', error);
-                }
+                console.error('Error getting initial session:', error);
             } finally {
-                if (isMounted) {
-                    // Ensure we eventually stop loading
-                    setTimeout(() => {
-                        if (isMounted) setLoading(false);
-                    }, 1000);
-                }
+                if (isMounted) setLoading(false);
             }
         };
 
         initAuth();
 
+        // 2. Setup auth change listener
+        const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+            console.log(`Auth event: ${event}`);
+
+            if (!isMounted) return;
+
+            if (session?.user) {
+                setUser(session.user);
+                // Only fetch profile if it's missing or if it's a significant event (like SIGNED_IN)
+                if (!profile || event === 'SIGNED_IN') {
+                    const userProfile = await getUserProfile(session.user.id);
+                    if (isMounted) setProfile(userProfile);
+                }
+            } else {
+                setUser(null);
+                setProfile(null);
+            }
+
+            setLoading(false);
+        });
+
         return () => {
             isMounted = false;
-            if (subscription) {
-                subscription.unsubscribe();
-            }
+            subscription.unsubscribe();
         };
     }, []);
 

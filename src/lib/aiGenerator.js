@@ -1,10 +1,6 @@
+import { sendChatRequest } from './llmProvider';
+
 export async function generateScenarioStructure(topic, difficulty = 'normal') {
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-
-    if (!apiKey) {
-        throw new Error("API Key não configurada.");
-    }
-
     const systemPrompt = `
         Você é um especialista em Treinamento de Vendas e Criador de Cenários de Roleplay.
         Sua tarefa é criar um cenário de vendas realista para treinamento de vendedores.
@@ -73,29 +69,19 @@ export async function generateScenarioStructure(topic, difficulty = 'normal') {
         1. O JSON deve ser válido.
         2. Crie pelo menos 4 nós (steps).
         3. O nó inicial DEVE ter id "start".
-        4. Use "success" e "failure" como nextId para fins de fluxo.
+        4. Use "success" e "failure" as nextId para fins de fluxo.
         5. Seja criativo e realista no texto do diálogo.
     `;
 
     try {
-        const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${apiKey}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                contents: [{ parts: [{ text: systemPrompt }] }]
-            })
+        const result = await sendChatRequest({
+            systemPrompt: systemPrompt,
+            messages: [],
+            temperature: 0.8
         });
 
-        const data = await response.json();
-
-        if (data.error) {
-            console.error("Gemini API Error:", data.error);
-            throw new Error(data.error.message || "Erro na API Gemini");
-        }
-
-        const text = data.candidates[0].content.parts[0].text;
         // Clean markdown code blocks if present
-        const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
+        const jsonStr = result.text.replace(/```json/g, '').replace(/```/g, '').trim();
 
         return JSON.parse(jsonStr);
 
@@ -104,3 +90,4 @@ export async function generateScenarioStructure(topic, difficulty = 'normal') {
         throw err;
     }
 }
+

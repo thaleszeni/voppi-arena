@@ -18,6 +18,16 @@ export default function LoginPage() {
     const [error, setError] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
+    const { user, loading: authLoading } = useAuth();
+    const { useEffect } = require('react');
+
+    // Redireciona se já estiver logado
+    useEffect(() => {
+        if (!authLoading && user) {
+            router.push('/');
+        }
+    }, [user, authLoading, router]);
+
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
