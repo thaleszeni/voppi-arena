@@ -87,16 +87,41 @@ export async function POST(req) {
             });
             if (error) throw error;
 
-            // Criar perfil manualmente para garantir
-            await supabaseAdmin.from('profiles').insert({
+            // Usar upsert para evitar conflito com o trigger on_auth_user_created
+            await supabaseAdmin.from('profiles').upsert({
                 id: data.user.id,
                 full_name: fullName,
                 role: 'user',
                 level: 1,
-                total_points: 0
+                total_points: 0,
+                updated_at: new Date()
             });
 
             return NextResponse.json({ success: true, message: 'Usuário criado com sucesso!' });
+        }
+
+        if (action === 'update_user') {
+            const { fullName, email } = body;
+
+            // 1. Atualizar Auth (se tiver email novo ou senha nova)
+            const authUpdates = {};
+            if (email) authUpdates.email = email;
+            if (body.password) authUpdates.password = body.password;
+
+            if (Object.keys(authUpdates).length > 0) {
+                const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(userId, authUpdates);
+                if (authError) throw authError;
+            }
+
+            // 2. Atualizar Profile
+            const { error: profileError } = await supabaseAdmin
+                .from('profiles')
+                .update({ full_name: fullName })
+                .eq('id', userId);
+
+            if (profileError) throw profileError;
+
+            return NextResponse.json({ success: true, message: 'Dados atualizados com sucesso.' });
         }
 
         if (action === 'delete_user') {

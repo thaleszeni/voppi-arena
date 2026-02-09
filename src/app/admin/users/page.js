@@ -24,6 +24,8 @@ export default function AdminUsersPage() {
     // Modal State
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [newUser, setNewUser] = useState({ fullName: '', email: '', password: '' });
+    const [showEditModal, setShowEditModal] = useState(false);
+    const [userToEdit, setUserToEdit] = useState({ id: '', fullName: '', email: '' });
 
     useEffect(() => {
         if (!loading && (!user || !isAdmin)) {
@@ -52,6 +54,22 @@ export default function AdminUsersPage() {
             console.error('Error fetching users:', err);
         } finally {
             setFetching(false);
+        }
+    };
+
+    const handleUpdateUser = async (e) => {
+        e.preventDefault();
+        try {
+            await callAdminApi('update_user', userToEdit.id, null, {
+                fullName: userToEdit.fullName,
+                email: userToEdit.email,
+                password: userToEdit.password // Include password if set
+            });
+            setShowEditModal(false);
+            setUserToEdit({ id: '', fullName: '', email: '', password: '' });
+            fetchUsers();
+        } catch (err) {
+            console.error(err);
         }
     };
 
@@ -231,6 +249,21 @@ export default function AdminUsersPage() {
                                                         </Button>
 
                                                         <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={async () => {
+                                                                setUserToEdit({
+                                                                    id: u.id,
+                                                                    fullName: u.full_name || '',
+                                                                    email: u.email || ''
+                                                                });
+                                                                setShowEditModal(true);
+                                                            }}
+                                                        >
+                                                            ✏️ Editar
+                                                        </Button>
+
+                                                        <Button
                                                             variant="outline"
                                                             size="sm"
                                                             onClick={async () => {
@@ -281,6 +314,44 @@ export default function AdminUsersPage() {
                             </div>
                         </CardContent>
                     </Card>
+
+                    {showEditModal && (
+                        <div style={{
+                            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                            backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1000,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            <div style={{
+                                backgroundColor: '#1a1a1a', padding: '24px', borderRadius: '12px',
+                                width: '100%', maxWidth: '400px', border: '1px solid #333'
+                            }}>
+                                <h3 style={{ marginBottom: '16px', color: 'white' }}>Editar Usuário</h3>
+                                <form onSubmit={handleUpdateUser} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <Input
+                                        label="Nome Completo"
+                                        value={userToEdit.fullName}
+                                        onChange={e => setUserToEdit({ ...userToEdit, fullName: e.target.value })}
+                                        required
+                                    />
+                                    <Input
+                                        label="E-mail"
+                                        type="email"
+                                        value={userToEdit.email}
+                                        onChange={e => setUserToEdit({ ...userToEdit, email: e.target.value })}
+                                        required
+                                    />
+                                    <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                                        <Button type="button" variant="ghost" fullWidth onClick={() => setShowEditModal(false)}>
+                                            Cancelar
+                                        </Button>
+                                        <Button type="submit" variant="primary" fullWidth>
+                                            Salvar
+                                        </Button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
                 </main>
             </div>
         </>
