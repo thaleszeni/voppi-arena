@@ -62,6 +62,28 @@ export async function POST(req) {
             return NextResponse.json({ success: true, message: 'Senha atualizada com sucesso.' });
         }
 
+        if (action === 'create_user') {
+            const { email, password, fullName } = body;
+            const { data, error } = await supabaseAdmin.auth.admin.createUser({
+                email,
+                password,
+                email_confirm: true, // Já cria confirmado pois foi o admin que fez
+                user_metadata: { full_name: fullName }
+            });
+            if (error) throw error;
+
+            // Criar perfil manualmente para garantir
+            await supabaseAdmin.from('profiles').insert({
+                id: data.user.id,
+                full_name: fullName,
+                role: 'user',
+                level: 1,
+                total_points: 0
+            });
+
+            return NextResponse.json({ success: true, message: 'Usuário criado com sucesso!' });
+        }
+
         if (action === 'delete_user') {
             const { error } = await supabaseAdmin.auth.admin.deleteUser(userId);
             if (error) throw error;

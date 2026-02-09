@@ -21,6 +21,10 @@ export default function AdminUsersPage() {
     const [editingUser, setEditingUser] = useState(null);
     const [successMessage, setSuccessMessage] = useState('');
 
+    // Modal State
+    const [showCreateModal, setShowCreateModal] = useState(false);
+    const [newUser, setNewUser] = useState({ fullName: '', email: '', password: '' });
+
     useEffect(() => {
         if (!loading && (!user || !isAdmin)) {
             router.push('/');
@@ -48,12 +52,26 @@ export default function AdminUsersPage() {
         }
     };
 
-    const callAdminApi = async (action, userId, newPassword = null) => {
+    const handleCreateUser = async (e) => {
+        e.preventDefault();
         try {
+            await callAdminApi('create_user', null, null, newUser);
+            setShowCreateModal(false);
+            setNewUser({ fullName: '', email: '', password: '' });
+            fetchUsers();
+        } catch (err) {
+            console.error(err);
+        }
+    };
+
+    const callAdminApi = async (action, userId, newPassword = null, extraData = {}) => {
+        try {
+            const body = { action, userId, newPassword, ...extraData };
+
             const res = await fetch('/api/admin/users', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ action, userId, newPassword })
+                body: JSON.stringify(body)
             });
 
             const data = await res.json();
@@ -67,6 +85,7 @@ export default function AdminUsersPage() {
         } catch (err) {
             console.error('Admin Action Error:', err);
             alert(`Erro: ${err.message}`);
+            // throw err; // Optional rethrow if needed
         }
     };
 
@@ -110,10 +129,55 @@ export default function AdminUsersPage() {
                                 Visualize e gerencie as permissões dos comerciais.
                             </p>
                         </div>
-                        <Button variant="primary" onClick={() => router.push('/login')}>
-                            + Criar Usuário (pelo Login)
+                        <Button variant="primary" onClick={() => setShowCreateModal(true)}>
+                            + Criar Usuário
                         </Button>
                     </div>
+
+                    {showCreateModal && (
+                        <div style={{
+                            position: 'fixed', top: 0, left: 0, right: 0, bottom: 0,
+                            backgroundColor: 'rgba(0,0,0,0.7)', zIndex: 1000,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center'
+                        }}>
+                            <div style={{
+                                backgroundColor: '#1a1a1a', padding: '24px', borderRadius: '12px',
+                                width: '100%', maxWidth: '400px', border: '1px solid #333'
+                            }}>
+                                <h3 style={{ marginBottom: '16px', color: 'white' }}>Criar Novo Usuário</h3>
+                                <form onSubmit={handleCreateUser} style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                                    <Input
+                                        label="Nome Completo"
+                                        value={newUser.fullName}
+                                        onChange={e => setNewUser({ ...newUser, fullName: e.target.value })}
+                                        required
+                                    />
+                                    <Input
+                                        label="E-mail"
+                                        type="email"
+                                        value={newUser.email}
+                                        onChange={e => setNewUser({ ...newUser, email: e.target.value })}
+                                        required
+                                    />
+                                    <Input
+                                        label="Senha Inicial"
+                                        type="password"
+                                        value={newUser.password}
+                                        onChange={e => setNewUser({ ...newUser, password: e.target.value })}
+                                        required
+                                    />
+                                    <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
+                                        <Button type="button" variant="ghost" fullWidth onClick={() => setShowCreateModal(false)}>
+                                            Cancelar
+                                        </Button>
+                                        <Button type="submit" variant="primary" fullWidth>
+                                            Criar Conta
+                                        </Button>
+                                    </div>
+                                </form>
+                            </div>
+                        </div>
+                    )}
 
                     {successMessage && (
                         <div style={{ backgroundColor: '#10b981', color: 'white', padding: '10px', borderRadius: '4px', marginBottom: '20px' }}>
