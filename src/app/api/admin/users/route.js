@@ -17,6 +17,11 @@ const supabaseAdmin = createClient(
 
 export async function POST(req) {
     try {
+        if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+            console.error('❌ FATAL: SUPABASE_SERVICE_ROLE_KEY is missing in environment variables.');
+            return NextResponse.json({ error: 'Configuration Error: Service Key Missing on Server.' }, { status: 500 });
+        }
+
         // 1. Verificação de Segurança (Quem está chamando?)
         const supabase = createRouteHandlerClient({ cookies });
         const { data: { session } } = await supabase.auth.getSession();

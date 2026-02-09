@@ -15,15 +15,15 @@ if (!supabaseUrl || !supabaseAnonKey) {
 
 // Only initialize if we have the credentials to avoid crashing during build
 let supabaseClient;
-try {
-    ?createClient(supabaseUrl, supabaseAnonKey, {
-  auth: {
-    persistSession: true,
-    storage: typeof window !== 'undefined' ? window.sessionStorage : undefined,
-    detectSessionInUrl: true
-  }
-})
-    : null;
+supabaseClient = (supabaseUrl && supabaseAnonKey)
+  ? createClient(supabaseUrl, supabaseAnonKey, {
+    auth: {
+      persistSession: true,
+      storage: typeof window !== 'undefined' ? window.sessionStorage : undefined,
+      detectSessionInUrl: true
+    }
+  })
+  : null;
 } catch (e) {
   console.error('❌ Error creating Supabase client:', e);
 }
