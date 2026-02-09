@@ -343,7 +343,7 @@ export default function ScenarioBuilderPage() {
                                                                     <option value="success">[FIM] Sucesso</option>
                                                                     <option value="failure">[FIM] Falha</option>
                                                                 </select>
-                                                                <Button
+                                                                <VoppiButton
                                                                     variant="danger"
                                                                     size="sm"
                                                                     onClick={() => {
