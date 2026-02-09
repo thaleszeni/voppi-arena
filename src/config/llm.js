@@ -6,9 +6,8 @@
 export const LLM_CONFIG = {
     provider: 'groq',
 
-    // ATENÇÃO: Chave configurada como fallback. 
-    // Nota: Dividida para evitar bloqueio do GitHub Push Protection.
-    apiKey: process.env.NEXT_PUBLIC_GROQ_API_KEY || ('gsk_' + 'mAysB6JsXU4V4vfA5KBBWGdyb3FYx6P2lwA8ihez830ASveoPrP4'),
+    // Chave de API (carregada das variáveis de ambiente)
+    apiKey: process.env.NEXT_PUBLIC_GROQ_API_KEY,
 
     // Modelos recomendados para Groq:
     // llama-3.3-70b-versatile (Alta qualidade)
