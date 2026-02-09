@@ -49,6 +49,11 @@ export const generateScenario = (templateOrId, difficulty = 'normal') => {
     const scenarioId = typeof templateOrId === 'string' ? templateOrId : (template.slug || template.id || 'dynamic');
     scenario.instanceId = `${scenarioId}-${Date.now()}`;
 
+    // 🔥 CRITICAL: Preserve enrichedProfileId from template
+    if (template.enrichedProfileId) {
+        scenario.enrichedProfileId = template.enrichedProfileId;
+    }
+
     // Pick a random lead type based on difficulty or just random
     const leadTypeKeys = Object.keys(LEAD_TYPES);
     const leadType = LEAD_TYPES[leadTypeKeys[Math.floor(Math.random() * leadTypeKeys.length)].toUpperCase()] || LEAD_TYPES.SIMPATIZANTE;

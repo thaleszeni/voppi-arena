@@ -39,6 +39,13 @@ export async function getAIResponse(messages, scenarioContext) {
 
 async function callRealLLM(messages, scenarioContext, apiKey) {
     try {
+        // 🔍 DEBUG: Log para verificar se enrichedProfileId está chegando
+        console.log('[AI Debug] Scenario context:', {
+            title: scenarioContext.title,
+            enrichedProfileId: scenarioContext.enrichedProfileId,
+            hasProfile: !!scenarioContext.enrichedProfileId
+        });
+
         // Tenta carregar perfil enriquecido se existir
         const enrichedProfile = scenarioContext.enrichedProfileId
             ? getEnrichedProfile(scenarioContext.enrichedProfileId)
