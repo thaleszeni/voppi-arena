@@ -2,7 +2,7 @@
 
 import { useAuth } from '@/contexts/AuthContext';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import Link from 'next/link';
 import Navbar from '@/components/layout/Navbar';
 import Sidebar from '@/components/layout/Sidebar';
@@ -56,11 +56,32 @@ export default function AdminDashboardPage() {
     const { user, profile, loading, isAdmin } = useAuth();
     const router = useRouter();
 
+    const [userCount, setUserCount] = useState('-');
+
     useEffect(() => {
         if (!loading && (!user || !isAdmin)) {
             router.push('/');
         }
     }, [user, loading, isAdmin, router]);
+
+    useEffect(() => {
+        async function fetchStats() {
+            try {
+                const res = await fetch('/api/admin/users', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ action: 'list_users' })
+                });
+                const data = await res.json();
+                if (data.users) {
+                    setUserCount(data.users.length);
+                }
+            } catch (error) {
+                console.error('Error loading stats:', error);
+            }
+        }
+        if (isAdmin) fetchStats();
+    }, [isAdmin]);
 
     if (loading || !user || !isAdmin) {
         return (
@@ -120,7 +141,9 @@ export default function AdminDashboardPage() {
                                         <h3 className={styles.sectionName}>{section.title}</h3>
                                         <p className={styles.sectionDescription}>{section.description}</p>
                                         <div className={styles.sectionStats}>
-                                            <span className={styles.sectionStatValue}>{section.stats.value}</span>
+                                            <span className={styles.sectionStatValue}>
+                                                {section.id === 'users' ? userCount : section.stats.value}
+                                            </span>
                                             <span className={styles.sectionStatLabel}>{section.stats.label}</span>
                                         </div>
                                     </CardContent>
