@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuth } from '@/contexts/AuthContext';
 import Button from '@/components/ui/Button';
@@ -16,10 +16,10 @@ export default function LoginPage() {
     const [password, setPassword] = useState('');
     const [fullName, setFullName] = useState('');
     const [error, setError] = useState('');
+    const [successMessage, setSuccessMessage] = useState('');
     const [isSubmitting, setIsSubmitting] = useState(false);
 
     const { user, loading: authLoading } = useAuth();
-    const { useEffect } = require('react');
 
     // Redireciona se já estiver logado
     useEffect(() => {
@@ -47,14 +47,20 @@ export default function LoginPage() {
                     setIsSubmitting(false);
                     return;
                 }
-                const { error } = await signUp(email, password, fullName);
+                const { data, error } = await signUp(email, password, fullName);
                 if (error) {
                     setError(error.message || 'Erro ao criar conta');
+                } else if (data?.user && !data?.session) {
+                    // Usuário criado mas pendente de confirmação
+                    setError(''); // Limpa erro
+                    setSuccessMessage('Conta criada com sucesso! Verifique seu e-mail para confirmar o cadastro antes de fazer login.');
+                    setIsLogin(true); // Volta para tela de login
                 } else {
                     router.push('/');
                 }
             }
         } catch (err) {
+            console.error(err);
             setError('Ocorreu um erro. Tente novamente.');
         }
 
@@ -146,6 +152,12 @@ export default function LoginPage() {
                         {error && (
                             <div className={styles.loginError}>
                                 {error}
+                            </div>
+                        )}
+
+                        {successMessage && (
+                            <div className={styles.loginSuccess} style={{ backgroundColor: '#10b98120', color: '#10b981', padding: '10px', borderRadius: '8px', marginBottom: '16px', fontSize: '0.9rem', border: '1px solid #10b98140' }}>
+                                {successMessage}
                             </div>
                         )}
 

@@ -48,6 +48,28 @@ export default function AdminUsersPage() {
         }
     };
 
+    const callAdminApi = async (action, userId, newPassword = null) => {
+        try {
+            const res = await fetch('/api/admin/users', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ action, userId, newPassword })
+            });
+
+            const data = await res.json();
+
+            if (!res.ok) throw new Error(data.error || 'Erro na requisição');
+
+            setSuccessMessage(data.message);
+            setTimeout(() => setSuccessMessage(''), 4000);
+
+            // Refresh list if needed (optional)
+        } catch (err) {
+            console.error('Admin Action Error:', err);
+            alert(`Erro: ${err.message}`);
+        }
+    };
+
     const handleToggleAdmin = async (userId, currentRole) => {
         const newRole = currentRole === 'admin' ? 'user' : 'admin';
         try {
@@ -132,13 +154,51 @@ export default function AdminUsersPage() {
                                                 <td style={{ padding: '12px' }}>N{u.level}</td>
                                                 <td style={{ padding: '12px' }}>{u.total_points}</td>
                                                 <td style={{ padding: '12px' }}>
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => handleToggleAdmin(u.id, u.role)}
-                                                    >
-                                                        {u.role === 'admin' ? 'Remover Admin' : 'Tornar Admin'}
-                                                    </Button>
+                                                    <div style={{ display: 'flex', gap: '8px' }}>
+                                                        <Button
+                                                            variant="ghost"
+                                                            size="sm"
+                                                            onClick={() => handleToggleAdmin(u.id, u.role)}
+                                                        >
+                                                            {u.role === 'admin' ? '⬇️ User' : '⬆️ Admin'}
+                                                        </Button>
+
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={async () => {
+                                                                if (!confirm(`Confirmar e-mail de ${u.full_name} manualmente?`)) return;
+                                                                await callAdminApi('confirm_email', u.id);
+                                                            }}
+                                                        >
+                                                            ✅ Confirmar
+                                                        </Button>
+
+                                                        <Button
+                                                            variant="outline"
+                                                            size="sm"
+                                                            onClick={async () => {
+                                                                const newPass = prompt(`Nova senha para ${u.full_name}:`);
+                                                                if (!newPass) return;
+                                                                await callAdminApi('reset_password', u.id, newPass);
+                                                            }}
+                                                        >
+                                                            🔑 Senha
+                                                        </Button>
+
+                                                        <Button
+                                                            variant="danger"
+                                                            size="sm"
+                                                            onClick={async () => {
+                                                                if (!confirm(`Tem certeza que deseja DELETAR ${u.full_name}? Isso não tem volta.`)) return;
+                                                                await callAdminApi('delete_user', u.id);
+                                                                // Remove da lista localmente
+                                                                setUsers(users.filter(user => user.id !== u.id));
+                                                            }}
+                                                        >
+                                                            🗑️
+                                                        </Button>
+                                                    </div>
                                                 </td>
                                             </tr>
                                         ))}
