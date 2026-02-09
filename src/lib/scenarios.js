@@ -1,5 +1,6 @@
 import { OBJECTIONS_DATA, getRandomObjection, getObjectionById } from './objections';
 import { LEAD_TYPES, MILESTONES } from './gameConfig';
+import { getEnrichedProfile, getRandomProfileId } from './personaProfiles';
 
 const CUSTOMER_TRAITS = [
     {
@@ -49,10 +50,20 @@ export const generateScenario = (templateOrId, difficulty = 'normal') => {
     const scenarioId = typeof templateOrId === 'string' ? templateOrId : (template.slug || template.id || 'dynamic');
     scenario.instanceId = `${scenarioId}-${Date.now()}`;
 
-    // 🔥 CRITICAL: Preserve enrichedProfileId from template
+    // 🔥 CRITICAL: Use template profile OR pick a random one if suitable for variety
     if (template.enrichedProfileId) {
         scenario.enrichedProfileId = template.enrichedProfileId;
+    } else if (template.category?.includes('restaurant') || template.category?.includes('park')) {
+        // Se o cenário é genérico (não tem perfil fixo), sorteamos um compatível
+        const categoryMatch = template.category?.includes('park') ? 'park' : 'restaurant';
+        scenario.enrichedProfileId = getRandomProfileId(categoryMatch);
     }
+
+    // Carregar perfil para injeção de nomes
+    const activeProfile = scenario.enrichedProfileId ? getEnrichedProfile(scenario.enrichedProfileId) : null;
+    const leadName = activeProfile?.decisionMaker?.name || 'Lead';
+    const businessName = activeProfile?.businessProfile?.name || 'Sabor & Arte';
+
 
     // Pick a random lead type based on difficulty or just random
     const leadTypeKeys = Object.keys(LEAD_TYPES);
@@ -63,6 +74,19 @@ export const generateScenario = (templateOrId, difficulty = 'normal') => {
     if (scenario.nodes) {
         Object.keys(scenario.nodes).forEach(nodeKey => {
             const node = scenario.nodes[nodeKey];
+
+            // Inject dynamic names from profile
+            if (activeProfile) {
+                if (node.speakerName === 'Dono do Restaurante' || node.speakerName === 'Carlos' || node.speakerName === 'Carlos (Dono)') {
+                    node.speakerName = leadName;
+                }
+
+                // Substituir placeholders genéricos no conteúdo
+                node.content = node.content
+                    .replace(/Sabor & Arte/g, businessName)
+                    .replace(/Carlos/g, leadName)
+                    .replace(/Aventura/g, businessName); // Para parques
+            }
 
             // Inject lead type reactions
             if (node.type === 'dialogue' && node.content.includes('{trait_reaction}')) {
@@ -413,7 +437,7 @@ export const SCENARIOS_DATA = {
         category: 'restaurant_gatekeeper',
         difficulty: 2,
         minLevel: 1,
-        enrichedProfileId: 'restaurante-italiano-floripa',  // 🎯 PERFIL RICO CONECTADO
+        enrichedProfileId: null,  // 🎯 Agora o sistema sorteia um perfil rico aleatório!
         startNodeId: 'node-1',
         nodes: {
             'node-1': {

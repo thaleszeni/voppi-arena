@@ -8,6 +8,7 @@
 
 export const PERSONA_PROFILES = {
     'restaurante-italiano-floripa': {
+        categories: ['restaurant', 'gastronomy'],
         // ========== DADOS DO ESTABELECIMENTO ==========
         businessProfile: {
             name: "Sapore di Casa",
@@ -144,6 +145,7 @@ export const PERSONA_PROFILES = {
     },
 
     'hamburgueria-sp': {
+        categories: ['restaurant', 'burger', 'fast-food'],
         businessProfile: {
             name: "Burger Lab",
             type: "Hamburgueria Artesanal",
@@ -231,6 +233,277 @@ export const PERSONA_PROFILES = {
             timeAvailable: "3 minutos",
             redFlags: ["Vendedor enrolão", "Pitch decorado sem personalização"]
         }
+    },
+
+    'cafe-tradicional': {
+        categories: ['restaurant', 'cafe', 'bakery'],
+        businessProfile: {
+            name: "Doce Vida Café",
+            type: "Cafeteria e Doceria",
+            subtype: "Confeitaria artesanal clássica",
+            location: {
+                city: "Curitiba",
+                neighborhood: "Batel",
+                region: "Sul - PR",
+                ambiance: "Clássico, móveis de madeira, cheiro de bolo fresco"
+            },
+            size: "pequeno (25 lugares)",
+            priceRange: "$$",
+            avgTicket: "R$ 45 por pessoa",
+            monthlyRevenue: "R$ 55.000",
+            establishedYear: 1998,
+            specialties: ["Torta Marta Rocha", "Empadão de frango", "Café coado na hora"]
+        },
+
+        decisionMaker: {
+            name: "Dona Margarida",
+            role: "Proprietária e Confeiteira",
+            age: 62,
+            personality: [
+                "Muito apegada às tradições",
+                "Receosa com tecnologia e 'coisas modernas'",
+                "Valoriza o atendimento um a um",
+                "Pode ser um pouco teimosa"
+            ],
+            yearsInBusiness: 26,
+            background: "Abriu a doceria com o marido em 98. Hoje o marido falecido, ela toca com uma ajudante.",
+            workload: "50 horas/semana (foco na produção)",
+            communicationStyle: "Fala com carinho do negócio, usa termos caseiros, evita termos em inglês."
+        },
+
+        businessPatterns: {
+            strongDays: ["Quarta a Sábado (tarde)", "Domingo tarde"],
+            weakDays: ["Segunda", "Terça (movimento bem baixo)"],
+            peakSeasons: ["Inverno", "Dia das Mães", "Natal (encomendas)"],
+            lowSeasons: ["Verão (Curitiba fica vazia)", "Janeiro"]
+        },
+
+        marketContext: {
+            mainCompetitors: ["The Coffee (moderno)", "Padarias locais", "Redes de franquia"],
+            currentChallenges: [
+                "Dificuldade em atrair público jovem",
+                "Margens apertadas pelo custo da manteiga/leite",
+                "Não sabe mexer em redes sociais",
+                "O movimento de bairro caiu com novos prédios comerciais"
+            ],
+            digitalPresence: {
+                instagram: "Não tem (ou tem um parado criado pela sobrinha)",
+                googleReviews: "4.8 estrelas (muitos elogios à qualidade)"
+            }
+        },
+
+        pastExperiences: {
+            frustrations: [
+                "Apps de entrega: desisti porque o motoboy estragava o bolo",
+                "Tentativa de anúncio em jornal de bairro: zero retorno"
+            ],
+            successStories: [
+                "Boca a boca de 25 anos",
+                "Encomendas de tortas inteiras para festas"
+            ]
+        },
+
+        interestTriggers: {
+            positive: [
+                "Falar em valorizar a tradição do lugar",
+                "Proposta de ajuda 'mão na massa'",
+                "Mencionar que conhece a fama da torta dela",
+                "Explicar tecnologia de forma simples e humana"
+            ],
+            negative: [
+                "Falar termos técnicos/inglês (ROI, Lead, Ads)",
+                "Pressionar por decisão rápida",
+                "Prometer 'digitalização total'"
+            ]
+        },
+
+        phoneEtiquette: {
+            greeting: "Doce Vida, Margarida falando.",
+            mood: "Maternal mas ocupada (provavelmente está na cozinha).",
+            timeAvailable: "4-5 minutos (se a conversa for agradável)",
+            redFlags: ["Vendedor que fala rápido demais", "Falta de educação"]
+        }
+    },
+
+    'sushi-bar-moderno': {
+        categories: ['restaurant', 'sushi', 'japanese'],
+        businessProfile: {
+            name: "Neo Sushi",
+            type: "Restaurante Japonês",
+            subtype: "Sushi bar focado em delivery de alta performance",
+            location: {
+                city: "Rio de Janeiro",
+                neighborhood: "Barra da Tijuca",
+                region: "Sudeste - RJ",
+                ambiance: "Look industrial, luz neon, focado em agilidade"
+            },
+            size: "Médio (60 lugares + 70% delivery)",
+            priceRange: "$$$",
+            avgTicket: "R$ 130 por pessoa",
+            monthlyRevenue: "R$ 250.000",
+            establishedYear: 2021,
+            specialties: ["Hot Roll trufado", "Sashimis maçaricados", "Drinks autorais"]
+        },
+
+        decisionMaker: {
+            name: "Kevin",
+            role: "Sócio e Gerente Operacional",
+            age: 28,
+            personality: [
+                "Hiperativo e focado em escala",
+                "Ama tecnologia e gadgets",
+                "Odeia ineficiência e desperdício",
+                "Dá muito valor a dados e performance"
+            ],
+            yearsInBusiness: 3,
+            background: "Formado em administração, viu no delivery de sushi uma oportunidade pós-pandemia.",
+            workload: "80+ horas/semana (sempre online)",
+            communicationStyle: "Rápido, usa gírias de tecnologia, prático."
+        },
+
+        businessPatterns: {
+            strongDays: ["Terça a Domingo (noite)", "Fins de semana"],
+            weakDays: ["Segunda", "Terça Almoço"],
+            peakSeasons: ["Dia dos Namorados", "Semana do Japa", "Feriados de Verão"],
+            lowSeasons: ["Inverno (RJ)", "Meio de mês (pós-fatura cartão)"]
+        },
+
+        marketContext: {
+            mainCompetitors: ["Gurumê", "Restaurantes tradicionais da Barra", "Dark kitchens"],
+            currentChallenges: [
+                "Altíssima taxa de apps (desconta 27% da margem)",
+                "Dificuldade em manter fidelidade (cliente pula de oferta em oferta)",
+                "Gestão de creators (perde muito tempo respondendo inbox)",
+                "Carga tributária pesada"
+            ],
+            digitalPresence: {
+                instagram: "@neosushirj - 45k seguidores, ads ativos",
+                googleReviews: "4.3 estrelas",
+                deliveryApps: "Onipresente (Ifood, Rappi, Próprio)"
+            }
+        },
+
+        pastExperiences: {
+            frustrations: [
+                "Campanhas de Influenciadores que dão clique mas não dão venda",
+                "Sistemas de gestão lentos que travam no pico de pedidos"
+            ],
+            successStories: [
+                "Ads geolocalizados na Barra",
+                "Clube de fidelidade próprio via WhatsApp"
+            ]
+        },
+
+        interestTriggers: {
+            positive: [
+                "Redução de dependência de apps terceiros",
+                "Automação de gestão de criadores",
+                "Dashboards de performance em tempo real",
+                "Escalabilidade"
+            ],
+            negative: [
+                "Solução que exige mais tempo manual dele",
+                "Tecnologia obsoleta",
+                "Vendedor que não entende de métricas"
+            ]
+        },
+
+        phoneEtiquette: {
+            greeting: "Opa, Neo Sushi. Kevin aqui.",
+            mood: "Acelerado. Provavelmente está com 3 telas abertas.",
+            timeAvailable: "2 minutos",
+            redFlags: ["Lentidão", "Falta de domínio técnico do produto"]
+        }
+    },
+
+    'pub-old-tavern': {
+        categories: ['restaurant', 'bar', 'pub', 'nightlife'],
+        businessProfile: {
+            name: "The Old Tavern",
+            type: "Pub / Bar de Eventos",
+            subtype: "Estilo britânico com música ao vivo",
+            location: {
+                city: "Belo Horizonte",
+                neighborhood: "Savassi",
+                region: "Sudeste - MG",
+                ambiance: "Escuro, luz quente, palcos para bandas de rock"
+            },
+            size: "Grande (150 lugares)",
+            priceRange: "$$",
+            avgTicket: "R$ 85 por pessoa",
+            monthlyRevenue: "R$ 140.000",
+            establishedYear: 2012,
+            specialties: ["Pints de Guinness", "Fish & Chips", "Noites de Rock anos 80"]
+        },
+
+        decisionMaker: {
+            name: "Fernando",
+            role: "Proprietário",
+            age: 45,
+            personality: [
+                "Boêmio mas bom gestor",
+                "Valoriza a 'vibe' do lugar",
+                "Focado em volume de pessoas e consumo de bar",
+                "Um pouco cansado da rotina noturna"
+            ],
+            yearsInBusiness: 12,
+            background: "Era frequentador de pubs, resolveu abrir o seu. Conhece todo mundo na noite de BH.",
+            workload: "Invertida (trabalha até 4h da manhã)",
+            communicationStyle: "Relaxado, amigável, gosta de uma boa conversa de balcão."
+        },
+
+        businessPatterns: {
+            strongDays: ["Quinta", "Sexta", "Sábado (noite)"],
+            weakDays: ["Segunda", "Terça", "Quarta (precisa de eventos)"],
+            peakSeasons: ["St. Patrick's Day (pico anual)", "Aniversário do Pub", "Férias de Julho"],
+            lowSeasons: ["Janeiro", "Cuaresma (movimento cai em BH)"]
+        },
+
+        marketContext: {
+            mainCompetitors: ["Jack Rock Bar", "Circus Rock Bar", "Bares de espetinho próximos"],
+            currentChallenges: [
+                "Terças e Quartas muito vazias",
+                "Dificuldade em renovar o público (atrair a nova geração)",
+                "Custo fixo alto (aluguel na Savassi)",
+                "Engajamento baixo no Instagram (está datado)"
+            ],
+            digitalPresence: {
+                instagram: "@oldtavernbh - 12k seguidores, posts de agenda de bandas",
+                googleReviews: "4.6 estrelas"
+            }
+        },
+
+        pastExperiences: {
+            frustrations: [
+                "Apps de desconto que trazem gente que só toma água",
+                "Bandas que cobram caro e não trazem público"
+            ],
+            successStories: [
+                "Noites de Quiz/Trivia (enchem a terça-feira)",
+                "Happy hour corporativo de empresas vizinhas"
+            ]
+        },
+
+        interestTriggers: {
+            positive: [
+                "Estratégias para dias úteis (Seg-Qua)",
+                "Trazer público novo/jovem",
+                "Divulgação de eventos específicos",
+                "Facilidade de uso (ele não quer complicação)"
+            ],
+            negative: [
+                "Falar em foco em comida (o foco dele é bebida/banda)",
+                "Exigir postagens diárias",
+                "Prometer público de elite (ele quer gente que consome bar)"
+            ]
+        },
+
+        phoneEtiquette: {
+            greeting: "Fala mestre! Old Tavern, Fernando falando.",
+            mood: "Gente boa, tom de voz grave, ruído de bar ao fundo (se for noite).",
+            timeAvailable: "5-6 minutos (gosta de trocar ideia)",
+            redFlags: ["Vendedor terno e gravata (fake)", "Falta de jogo de cintura"]
+        }
     }
 };
 
@@ -239,6 +512,22 @@ export const PERSONA_PROFILES = {
  */
 export function getEnrichedProfile(profileId) {
     return PERSONA_PROFILES[profileId] || null;
+}
+
+/**
+ * Helper: Seleciona um perfil aleatório, opcionalmente filtrado por categoria
+ */
+export function getRandomProfileId(category = null) {
+    let keys = Object.keys(PERSONA_PROFILES);
+
+    if (category) {
+        keys = keys.filter(key =>
+            PERSONA_PROFILES[key].categories?.includes(category)
+        );
+    }
+
+    if (keys.length === 0) return null;
+    return keys[Math.floor(Math.random() * keys.length)];
 }
 
 /**
