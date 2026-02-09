@@ -340,6 +340,13 @@ export default function AdminUsersPage() {
                                         onChange={e => setUserToEdit({ ...userToEdit, email: e.target.value })}
                                         required
                                     />
+                                    <Input
+                                        label="Nova Senha (Opcional)"
+                                        type="password"
+                                        value={userToEdit.password || ''}
+                                        onChange={e => setUserToEdit({ ...userToEdit, password: e.target.value })}
+                                        placeholder="Deixe em branco para manter a atual"
+                                    />
                                     <div style={{ display: 'flex', gap: '8px', marginTop: '8px' }}>
                                         <Button type="button" variant="ghost" fullWidth onClick={() => setShowEditModal(false)}>
                                             Cancelar
