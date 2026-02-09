@@ -30,9 +30,18 @@ const LEAD_NAMES = ["Ricardo", "Patrícia", "Sérgio", "Márcia", "Fernando", "C
 export async function getAIResponse(messages, scenarioContext) {
     const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
+    console.log('[AI Mode Check] API Key present:', !!apiKey);
+
     if (apiKey) {
-        return callRealLLM(messages, scenarioContext, apiKey);
+        try {
+            const response = await callRealLLM(messages, scenarioContext, apiKey);
+            return response;
+        } catch (error) {
+            console.error('[AI Mode Check] callRealLLM failed, falling back to simulation:', error);
+            return callSimulation(messages, scenarioContext);
+        }
     } else {
+        console.warn('[AI Mode Check] No API Key found, using simulation mode.');
         return callSimulation(messages, scenarioContext);
     }
 }
@@ -175,8 +184,13 @@ REGRAS DE OURO:
         const data = await response.json();
 
         if (data.error) {
-            console.error("Gemini API Error:", data.error);
-            return callSimulation(messages, scenarioContext);
+            console.error("Gemini API Error Detail:", JSON.stringify(data.error, null, 2));
+            throw new Error(`Gemini API Error: ${data.error.message}`);
+        }
+
+        if (!data.candidates || !data.candidates[0] || !data.candidates[0].content) {
+            console.error("Gemini Unexpected Response Format:", JSON.stringify(data, null, 2));
+            throw new Error("Resposta da IA em formato inesperado.");
         }
 
         let aiResponse = data.candidates[0].content.parts[0].text.trim();
