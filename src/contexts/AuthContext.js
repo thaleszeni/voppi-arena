@@ -53,8 +53,17 @@ export function AuthProvider({ children }) {
             setLoading(false);
         });
 
+        // 3. Safety timeout (prevents infinite loading)
+        const safetyTimeout = setTimeout(() => {
+            if (isMounted && loading) {
+                console.warn('Auth timeout: Forcing app to load.');
+                setLoading(false);
+            }
+        }, 3000);
+
         return () => {
             isMounted = false;
+            clearTimeout(safetyTimeout);
             subscription.unsubscribe();
         };
     }, []);
