@@ -54,7 +54,7 @@ export default function AIChatRoleplayPage() {
                     setScenario(foundScenario);
                     // Initial message from lead
                     setMessages([
-                        { role: 'assistant', content: "Olá. Sou o dono do negócio. Com quem estou falando e o que deseja?" }
+                        { role: 'assistant', content: "[Sons de fundo] Alô, pois não? Quem fala?" }
                     ]);
                 }
             } catch (err) {

@@ -5,21 +5,26 @@ const SIMULATION_RESPONSES = {
         "Olha, eu já recebi várias ligações dessa. O que vocês têm de diferente?",
         "Não estou convencido de que isso traga retorno real para o meu restaurante.",
         "Muitas taxas. Como eu sei que não vou perder dinheiro?",
-        "Já uso outros apps e eles me dão muito trabalho."
+        "Já uso outros apps e eles me dão muito trabalho.",
+        "O pessoal do Prime Gourmet já passou aqui e a conta não fechou."
     ],
     'busy': [
         "Estou no meio do serviço agora, pode ser rápido?",
         "Temos muito movimento hoje. O que você quer exatamente?",
         "Não tenho tempo para apresentações longas.",
-        "Se for para vender anúncio, eu não quero."
+        "Se for para vender anúncio, eu não quero.",
+        "Estou com a cozinha cheia, me liga em outra hora?"
     ],
     'innovator': [
         "Interessante... como funciona a integração com meu sistema?",
         "Estou buscando novas formas de atrair público jovem.",
         "Vocês trabalham com algum tipo de automação?",
-        "Me conte mais sobre como a Voppi ajuda no meu marketing."
+        "Me conte mais sobre como a Voppi ajuda no meu marketing.",
+        "Vi algo parecido em São Paulo, vocês atendem essa região?"
     ]
 };
+
+const LEAD_NAMES = ["Ricardo", "Patrícia", "Sérgio", "Márcia", "Fernando", "Cláudia", "Roberto", "Silvana"];
 
 export async function getAIResponse(messages, scenarioContext) {
     const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
@@ -34,30 +39,33 @@ export async function getAIResponse(messages, scenarioContext) {
 async function callRealLLM(messages, scenarioContext, apiKey) {
     try {
         const systemPrompt = `
-            Você é um lead comercial da Voppi (${COMPANY_CONTEXT.segment}). 
-            No momento você é: ${scenarioContext.leadType?.name || 'um dono de restaurante ocupado'}.
+            Você é um lead comercial REALÍSTICO (${COMPANY_CONTEXT.segment}).
+            Seu nome é ${LEAD_NAMES[Math.floor(Math.random() * LEAD_NAMES.length)]}. 
+            No momento você é: ${scenarioContext.leadType?.name || 'um proprietário de estabelecimento'}.
+            
+            ESTILO DE CONVERSA:
+            - Aja como se estivesse atendendo o telefone no seu negócio (pode haver barulho de fundo).
+            - Não fale como um robô ("Sou o dono"). Fale como uma pessoa ("Opa, pois não?", "Sou eu mesmo, quem fala?").
+            - Seja direto: donos de negócios têm pouco tempo.
+            - Responda apenas o que foi perguntado, mas mantenha a personalidade.
             
             SOBRE SEU NEGÓCIO:
-            - Público Alvo: ${COMPANY_CONTEXT.targetAudience}
-            - Dores Comuns: ${COMPANY_CONTEXT.mainObjections.join(', ')}
+            - Público: ${COMPANY_CONTEXT.targetAudience}
+            - Dificuldades: ${COMPANY_CONTEXT.mainObjections.join(', ')}
             
             O QUE ESTÃO TE VENDENDO (VOPPI):
-            - Proposta de Valor: ${COMPANY_CONTEXT.valueProposition}
-            - Marketing/Distribuição: ${COMPANY_CONTEXT.distributionAndMarketing}
-            - Preço: ${COMPANY_CONTEXT.pricing}
-            - Cases de Sucesso: ${COMPANY_CONTEXT.successCases}
+            ${COMPANY_CONTEXT.valueProposition}
             
             SUA PERSONA:
-            - Perfil: ${scenarioContext.leadType?.description || 'Cético e focado em custos'}.
-            - Objetivo: ${scenarioContext.leadType?.promptMod || 'agir como um lead real, difícil de convencer'}.
-            - Contexto do Cenário: ${scenarioContext.title}. ${scenarioContext.description}.
+            - Perfil: ${scenarioContext.leadType?.description || 'Exigente com custos e resultados'}.
+            - Objetivo: Agir como o lead no cenário "${scenarioContext.title}".
             
-            REGRAS DE INTERAÇÃO:
-            1. Responda de forma curta e natural (máx 2 frases).
-            2. Use as "Dores Comuns" para criar objeções reais.
-            3. Se o vendedor citar dados errados sobre a Voppi (diferente do contexto acima), corrija-o ou mostre desconfiança.
-            4. Se o vendedor for muito bom e cobrir suas objeções, comece a ceder aos poucos.
-            5. NUNCA mencione que você é uma IA.
+            REGRAS DE OURO:
+            1. Máximo 2 frases por resposta.
+            2. Não dê seu nome de cara se não confia no vendedor.
+            3. Se o vendedor for vago ou "vendedorzão" demais, seja mais seco.
+            4. Se ele citar um "case" ou algo específico do seu Instagram, mostre um pouco mais de atenção.
+            5. Use gírias corporativas de forma leve (ex: "momento", "retorno", "fluxo").
         `;
 
         // Prepare context from history
@@ -93,22 +101,34 @@ async function callRealLLM(messages, scenarioContext, apiKey) {
 
 function callSimulation(messages, scenarioContext) {
     const lastUserMsg = messages[messages.length - 1].content.toLowerCase();
+    const historyCount = messages.filter(m => m.role === 'assistant').length;
     const type = scenarioContext.leadType?.id || 'skeptical';
     const responses = SIMULATION_RESPONSES[type] || SIMULATION_RESPONSES.skeptical;
 
-    // Logic to select response based on keywords
-    if (lastUserMsg.includes('preço') || lastUserMsg.includes('taxa')) {
-        return "As taxas são sempre o problema. Como vocês justificam o valor que cobram?";
-    }
-    if (lastUserMsg.includes('olá') || lastUserMsg.includes('bom dia')) {
-        return "Olá. Sou o dono. O que você deseja? Tenho pouco tempo.";
-    }
-    if (lastUserMsg.includes('parceria') || lastUserMsg.includes('ajudar')) {
-        return "Todo mundo fala em parceria, mas no final eu que pago a conta. O que vocês trazem de clientes novos?";
+    // Greeting logic
+    if (historyCount <= 1) {
+        if (lastUserMsg.includes('nome') || lastUserMsg.includes('quem fala')) {
+            return `Aqui é o ${LEAD_NAMES[0]}. O que você quer exatamente?`;
+        }
     }
 
-    // Default random from persona
-    return responses[Math.floor(Math.random() * responses.length)];
+    // Keyword logic with more variety
+    if (lastUserMsg.includes('preço') || lastUserMsg.includes('taxa') || lastUserMsg.includes('quanto custa')) {
+        return "Todo mundo fala que não tem custo, mas sempre tem uma pegadinha. Qual a porcentagem de vocês?";
+    }
+    if (lastUserMsg.includes('olá') || lastUserMsg.includes('bom dia') || lastUserMsg.includes('boa tarde')) {
+        if (historyCount > 1) return "Como eu disse, estou corrido. Pode ir direto ao ponto?";
+        return "Opa, tudo bem? Quem fala?";
+    }
+    if (lastUserMsg.includes('parceria') || lastUserMsg.includes('ajudar')) {
+        return "Cara, recebo 5 ligações de 'parceria' por dia. O que a Voppi faz que o Instagram sozinho não faz?";
+    }
+    if (lastUserMsg.includes('agendar') || lastUserMsg.includes('reunião') || lastUserMsg.includes('visita')) {
+        return "Não quero agendar nada antes de entender se isso faz sentido pro meu caixa. Me explica mais aqui.";
+    }
+
+    // Default random from persona with simple rotation to avoid repetition
+    return responses[messages.length % responses.length];
 }
 
 export async function evaluateRoleplay(history, scenarioContext) {
