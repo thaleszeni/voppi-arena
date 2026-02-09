@@ -42,6 +42,16 @@ export async function POST(req) {
 
         console.log(`[Admin API] Action: ${action} on User: ${userId}`);
 
+        if (action === 'list_users') {
+            const { data, error } = await supabaseAdmin
+                .from('profiles')
+                .select('*')
+                .order('created_at', { ascending: false });
+
+            if (error) throw error;
+            return NextResponse.json({ success: true, users: data });
+        }
+
         if (action === 'confirm_email') {
             const { data, error } = await supabaseAdmin.auth.admin.updateUserById(
                 userId,
